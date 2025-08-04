@@ -1,5 +1,6 @@
 package com.ptit_intern.themoviedb.entity;
 
+import com.ptit_intern.themoviedb.util.SecurityUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,14 +28,17 @@ public class BaseEntity<DTO> implements Serializable {
     protected String updatedBy;
 
     @PrePersist
-    public void handleBeforeCreate(){
+    public void handleBeforeCreate() {
         this.createdAt = Instant.now();
-//        this.createdBy = SecurityUtil.getCurrentUserLogin().get();
+        this.createdBy = SecurityUtil.getCurrentUserLogin().get();
     }
+
     @PreUpdate
-    public void handleBeforeUpdate(){
+    public void handleBeforeUpdate() {
         this.updatedAt = Instant.now();
+        this.updatedBy = SecurityUtil.getCurrentUserLogin().get();
     }
+
     public DTO toDTO(Class<DTO> clazz) {
         try {
 //            new instance of dto
