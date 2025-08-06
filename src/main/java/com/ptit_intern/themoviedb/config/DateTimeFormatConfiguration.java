@@ -14,3 +14,7 @@ public class DateTimeFormatConfiguration implements WebMvcConfigurer {
         registrar.registerFormatters(registry);
     }
 }
+
+// Format time ISO-8601
+//2025-08-04 cho LocalDate
+//2025-08-04T10:24:00 cho LocalDateTime

@@ -1,6 +1,6 @@
 package com.ptit_intern.themoviedb.entity;
 
-import com.ptit_intern.themoviedb.dto.UserDTO;
+import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
 import com.ptit_intern.themoviedb.util.enums.RoleEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

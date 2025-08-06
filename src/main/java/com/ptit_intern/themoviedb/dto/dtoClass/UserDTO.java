@@ -1,6 +1,5 @@
-package com.ptit_intern.themoviedb.dto;
+package com.ptit_intern.themoviedb.dto.dtoClass;
 
-import com.ptit_intern.themoviedb.util.enums.RoleEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
