@@ -7,25 +7,22 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.util.Objects;
 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
-public class MovieCastId implements Serializable {
+public class MovieLanguageId implements Serializable {
     private Long movieId;
-    private Long personId;
-    private String job;
+    private String languageCode;
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MovieCastId that = (MovieCastId) o;
-        return Objects.equals(movieId, that.movieId) &&
-                Objects.equals(personId, that.personId) &&
-                Objects.equals(job, that.job);
+        MovieLanguageId that = (MovieLanguageId) o;
+        return Objects.equals(movieId, that.movieId) && Objects.equals(languageCode, that.languageCode);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(movieId, personId, job);
+        return Objects.hash(movieId, languageCode);
     }
 }

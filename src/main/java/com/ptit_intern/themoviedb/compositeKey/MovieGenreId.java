@@ -4,12 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class MovieGenreId {
+public class MovieGenreId implements Serializable {
     private Long movieId;
     private Long genreId;
 

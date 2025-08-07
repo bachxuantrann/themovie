@@ -1,8 +1,7 @@
 package com.ptit_intern.themoviedb.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.ptit_intern.themoviedb.compositeKey.MovieCountryId;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,13 +9,17 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "countries")
+@Table(name = "movie_countries")
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Country extends BaseEntity{
+@IdClass(MovieCountryId.class)
+public class MovieCountry {
+    @Id
+    @Column(name = "movie_id")
+    Long movieId;
+    @Id
     @Column(name = "country_code")
-    String countryCode;
-    String name;
+    private String countryCode;
 }

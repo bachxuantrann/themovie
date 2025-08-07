@@ -1,6 +1,6 @@
 package com.ptit_intern.themoviedb.entity;
 
-import com.ptit_intern.themoviedb.compositeKey.MovieGenreId;
+import com.ptit_intern.themoviedb.compositeKey.MovieCompanyId;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,24 +9,17 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "movie_casts")
+@Table(name = "movie_companies")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@IdClass(MovieGenreId.class)
-public class MovieCast {
+@IdClass(MovieCompanyId.class)
+public class MovieCompany {
     @Id
     @Column(name = "movie_id")
     Long movieId;
     @Id
-    @Column(name = "person_id")
-    Long personId;
-    @Id
-    String job;
-    @Column(name = "character_name")
-    String characterName;
-    @Column(name = "order_index")
-    Integer orderIndex;
-
+    @Column(name = "company_id")
+    Long companyId;
 }

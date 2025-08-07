@@ -22,21 +22,21 @@ public class BaseEntity<DTO> implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    protected Instant createdAt;
-    protected Instant updatedAt;
-    protected String createdBy;
-    protected String updatedBy;
+    protected Instant created_at;
+    protected Instant updated_at;
+    protected String created_by;
+    protected String updated_by;
 
     @PrePersist
     public void handleBeforeCreate() {
-        this.createdAt = Instant.now();
-        this.createdBy = SecurityUtil.getCurrentUserLogin().get();
+        this.created_at = Instant.now();
+        this.created_by = SecurityUtil.getCurrentUserLogin().get();
     }
 
     @PreUpdate
     public void handleBeforeUpdate() {
-        this.updatedAt = Instant.now();
-        this.updatedBy = SecurityUtil.getCurrentUserLogin().get();
+        this.updated_at = Instant.now();
+        this.updated_by = SecurityUtil.getCurrentUserLogin().get();
     }
 
     public DTO toDTO(Class<DTO> clazz) {

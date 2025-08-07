@@ -16,11 +16,12 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserList extends BaseEntity {
-    @Column(nullable = false)
+    @Column(nullable = false, name = "user_id")
     Long userId;
     String name;
     @Column(columnDefinition = "TEXT")
     String description;
+    @Column(name = "is_public")
     Boolean isPublic=false;
 
 }

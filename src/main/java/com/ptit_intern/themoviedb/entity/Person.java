@@ -22,11 +22,15 @@ import java.time.LocalDate;
 public class Person extends BaseEntity{
     @NotBlank(message = "name of person is required")
     String name;
+    @Column(name = "profile_path")
     String profilePath;
     @Column(columnDefinition = "TEXT")
     String biography;
+    @Column(name = "birth_date")
     LocalDate birthDate;
+    @Column(name = "place_of_birth")
     String placeOfBirth;
+    @Column(name = "death_date")
     LocalDate deathDate;
     GenderEnum gender;
 }

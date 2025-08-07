@@ -1,6 +1,5 @@
 package com.ptit_intern.themoviedb.entity;
 
-import com.ptit_intern.themoviedb.compositeKey.MovieGenreId;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,17 +8,17 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "movie_genres")
+@Table(name = "comments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@IdClass(MovieGenreId.class)
-public class MovieGenre {
-    @Id
-    @Column(name = "movie_id")
-    Long movieId;
-    @Id
-    @Column(name = "genre_id")
-    Long genreId;
+public class Comment extends BaseEntity{
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    @Column(name = "movie_id", nullable = false)
+    private Long movieId;
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    private String content;
 }

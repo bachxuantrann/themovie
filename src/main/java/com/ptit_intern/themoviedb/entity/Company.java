@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "languages")
+@Table(name = "companies")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Language extends BaseEntity {
-    @Column(name = "language_code")
-    String languageCode;
+public class Company extends BaseEntity {
     String name;
+    @Column(name = "logo_path")
+    String logoPath;
 }

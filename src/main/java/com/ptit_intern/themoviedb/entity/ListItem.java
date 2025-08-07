@@ -10,13 +10,14 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "languages")
+@Table(name = "list_items")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Language extends BaseEntity {
-    @Column(name = "language_code")
-    String languageCode;
-    String name;
+public class ListItem extends BaseEntity{
+    @Column(name = "list_id", nullable = false)
+    Long listId;
+    @Column(name = "movie_id", nullable = false)
+    private Long movieId;
 }

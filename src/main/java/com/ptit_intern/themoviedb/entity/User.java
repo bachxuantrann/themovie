@@ -22,11 +22,12 @@ public class User  extends BaseEntity<UserDTO> {
     @Enumerated(EnumType.STRING)
     private RoleEnum role;
     String email;
+    @Column(name = "full_name")
     String fullName;
     @Column(columnDefinition = "MEDIUMTEXT")
     String description;
-    @Column(columnDefinition = "MEDIUMTEXT")
+    @Column(columnDefinition = "MEDIUMTEXT",name = "avatar_url")
     String avatarUrl;
-    @Column(columnDefinition = "MEDIUMTEXT")
+    @Column(columnDefinition = "MEDIUMTEXT",name = "refresh_token")
     String refreshToken;
 }

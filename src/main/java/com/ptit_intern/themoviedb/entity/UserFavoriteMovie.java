@@ -1,25 +1,24 @@
 package com.ptit_intern.themoviedb.entity;
 
-import com.ptit_intern.themoviedb.compositeKey.MovieGenreId;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "movie_genres")
+@Table(name = "user_favorite_movies")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@IdClass(MovieGenreId.class)
-public class MovieGenre {
-    @Id
-    @Column(name = "movie_id")
+public class UserFavoriteMovie  extends BaseEntity {
+    @Column(name = "user_id", nullable = false)
+    Long userId;
+    @Column(name = "movie_id", nullable = false)
     Long movieId;
-    @Id
-    @Column(name = "genre_id")
-    Long genreId;
 }
