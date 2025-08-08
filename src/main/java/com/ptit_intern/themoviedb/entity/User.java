@@ -19,8 +19,10 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User  extends BaseEntity<UserDTO> {
     @NotBlank(message = "username is required")
+    @Column(name = "username", length = 100, unique = true, nullable = false)
     String username;
     @NotBlank(message = "password is required")
+    @Column(name = "password", nullable = false)
     String password;
     @Enumerated(EnumType.STRING)
     private RoleEnum role;

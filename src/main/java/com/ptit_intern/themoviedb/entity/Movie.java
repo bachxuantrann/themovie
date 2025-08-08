@@ -21,6 +21,7 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Movie extends BaseEntity {
+    @Column(name = "title", nullable = false)
     String title;
     @Column(name = "original_title")
     String originalTitle;

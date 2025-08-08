@@ -9,20 +9,17 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "movie_casts")
+@Table(name = "movie_casts",uniqueConstraints = @UniqueConstraint(columnNames = {"movie_id", "person_id", "job"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@IdClass(MovieGenreId.class)
-public class MovieCast {
-    @Id
-    @Column(name = "movie_id")
+public class MovieCast extends BaseEntity {
+    @Column(name = "movie_id",nullable = false)
     Long movieId;
-    @Id
-    @Column(name = "person_id")
+    @Column(name = "person_id",nullable = false)
     Long personId;
-    @Id
+    @Column(name = "job", length = 100, nullable = false)
     String job;
     @Column(name = "character_name")
     String characterName;

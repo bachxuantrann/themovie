@@ -6,17 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user_favorite_movies")
+@Table(name = "user_favorite_movies", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "movie_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserFavoriteMovie  extends BaseEntity {
+public class UserFavoriteMovie extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     Long userId;
     @Column(name = "movie_id", nullable = false)

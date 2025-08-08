@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "list_items")
+@Table(name = "list_items",uniqueConstraints = @UniqueConstraint(columnNames = {"list_id", "movie_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

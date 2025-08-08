@@ -19,6 +19,7 @@ import java.util.Set;
 public class UserList extends BaseEntity {
     @Column(nullable = false, name = "user_id")
     Long userId;
+    @Column(name = "name", nullable = false)
     String name;
     @Column(columnDefinition = "TEXT")
     String description;

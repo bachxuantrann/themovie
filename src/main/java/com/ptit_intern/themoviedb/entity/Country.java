@@ -17,8 +17,9 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Country extends BaseEntity{
-    @Column(name = "country_code")
+    @Column(name = "country_code",unique = true, nullable = false)
     String countryCode;
+    @Column(name = "name", unique = true, nullable = false)
     String name;
     // Relationships
     @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

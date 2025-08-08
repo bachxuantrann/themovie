@@ -21,8 +21,9 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Person extends BaseEntity {
     @NotBlank(message = "name of person is required")
+    @Column(name = "name", nullable = false)
     String name;
-    @Column(name = "profile_path")
+    @Column(name = "profile_path",columnDefinition = "TEXT")
     String profilePath;
     @Column(columnDefinition = "TEXT")
     String biography;

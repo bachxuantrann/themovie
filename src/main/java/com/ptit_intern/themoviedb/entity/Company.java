@@ -17,8 +17,9 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Company extends BaseEntity {
+    @Column(name = "name", nullable = false)
     String name;
-    @Column(name = "logo_path")
+    @Column(name = "logo_path",columnDefinition = "TEXT")
     String logoPath;
     // Relationships
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

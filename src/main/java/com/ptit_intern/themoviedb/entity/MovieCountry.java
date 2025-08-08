@@ -1,6 +1,5 @@
 package com.ptit_intern.themoviedb.entity;
 
-import com.ptit_intern.themoviedb.compositeKey.MovieCountryId;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,18 +8,15 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "movie_countries")
+@Table(name = "movie_countries", uniqueConstraints = @UniqueConstraint(columnNames = {"movie_id", "country_id"}))
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@IdClass(MovieCountryId.class)
-public class MovieCountry {
-    @Id
-    @Column(name = "movie_id")
+public class MovieCountry extends BaseEntity {
+    @Column(name = "movie_id", nullable = false)
     Long movieId;
-    @Id
-    @Column(name = "country_id")
+    @Column(name = "country_id", nullable = false)
     private String countryId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id", insertable = false, updatable = false)

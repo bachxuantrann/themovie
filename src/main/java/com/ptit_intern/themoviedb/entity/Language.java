@@ -17,8 +17,9 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Language extends BaseEntity {
-    @Column(name = "language_code")
+    @Column(name = "language_code",unique = true, nullable = false)
     String languageCode;
+    @Column(name = "name", unique = true, nullable = false)
     String name;
     // Relationships
     @OneToMany(mappedBy = "language", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

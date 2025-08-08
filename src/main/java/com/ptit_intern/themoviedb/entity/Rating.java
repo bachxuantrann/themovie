@@ -10,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "ratings")
+@Table(name = "ratings",uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "movie_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
