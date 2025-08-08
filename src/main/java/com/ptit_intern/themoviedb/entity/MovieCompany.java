@@ -22,4 +22,11 @@ public class MovieCompany {
     @Id
     @Column(name = "company_id")
     Long companyId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id",insertable = false,updatable = false)
+    private Movie movie;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id",insertable = false,updatable = false)
+    private Company company;
 }

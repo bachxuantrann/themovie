@@ -12,17 +12,17 @@ import java.util.Objects;
 @AllArgsConstructor
 public class MovieLanguageId implements Serializable {
     private Long movieId;
-    private String languageCode;
+    private String language_id;
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MovieLanguageId that = (MovieLanguageId) o;
-        return Objects.equals(movieId, that.movieId) && Objects.equals(languageCode, that.languageCode);
+        return Objects.equals(movieId, that.movieId) && Objects.equals(language_id, that.language_id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(movieId, languageCode);
+        return Objects.hash(movieId, language_id);
     }
 }

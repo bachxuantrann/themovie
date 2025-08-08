@@ -21,4 +21,12 @@ public class UserFavoriteMovie  extends BaseEntity {
     Long userId;
     @Column(name = "movie_id", nullable = false)
     Long movieId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id", insertable = false, updatable = false)
+    private Movie movie;
 }

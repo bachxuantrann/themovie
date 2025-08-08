@@ -1,8 +1,6 @@
 package com.ptit_intern.themoviedb.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.AccessLevel;
@@ -13,6 +11,8 @@ import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "movies")
@@ -48,4 +48,31 @@ public class Movie extends BaseEntity {
     @Column(name = "homepage_url")
     String homepageUrl;
     String status;
+
+//    Relationships
+    @OneToMany(mappedBy = "movie",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private Set<MovieGenre> movieGenres = new HashSet<>();
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<MovieCast> movieCasts = new HashSet<>();
+
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<MovieCompany> movieCompanies = new HashSet<>();
+
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<MovieCountry> movieCountries = new HashSet<>();
+
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<MovieLanguage> movieLanguages = new HashSet<>();
+
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Rating> ratings = new HashSet<>();
+
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<UserFavoriteMovie> userFavoriteMovies = new HashSet<>();
+
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Comment> comments = new HashSet<>();
+
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<ListItem> listItems = new HashSet<>();
 }

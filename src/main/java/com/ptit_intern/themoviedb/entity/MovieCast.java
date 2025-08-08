@@ -29,4 +29,10 @@ public class MovieCast {
     @Column(name = "order_index")
     Integer orderIndex;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id",insertable = false,updatable = false)
+    private Movie movie;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "person_id",insertable = false,updatable = false)
+    private Person person;
 }

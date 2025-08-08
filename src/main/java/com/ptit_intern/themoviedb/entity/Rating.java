@@ -1,8 +1,6 @@
 package com.ptit_intern.themoviedb.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,12 +15,20 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Rating extends BaseEntity{
-    @Column(name = "user_id",nullable = false)
+public class Rating extends BaseEntity {
+    @Column(name = "user_id", nullable = false)
     Long userId;
-    @Column(name = "movie_id",nullable = false)
+    @Column(name = "movie_id", nullable = false)
     Long movieId;
-    @Column(name = "score",nullable = false,precision = 2,scale = 1)
+    @Column(name = "score", nullable = false, precision = 2, scale = 1)
     private BigDecimal score;
+    //  Relationships
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id", insertable = false, updatable = false)
+    private Movie movie;
 
 }

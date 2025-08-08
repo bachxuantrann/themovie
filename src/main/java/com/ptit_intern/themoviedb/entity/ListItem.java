@@ -1,8 +1,6 @@
 package com.ptit_intern.themoviedb.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,4 +18,12 @@ public class ListItem extends BaseEntity{
     Long listId;
     @Column(name = "movie_id", nullable = false)
     private Long movieId;
+//   Relationships
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "list_id", insertable = false, updatable = false)
+    private UserList userList;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id", insertable = false, updatable = false)
+    private Movie movie;
 }

@@ -20,6 +20,14 @@ public class MovieCountry {
     @Column(name = "movie_id")
     Long movieId;
     @Id
-    @Column(name = "country_code")
-    private String countryCode;
+    @Column(name = "country_id")
+    private String countryId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id", insertable = false, updatable = false)
+    private Movie movie;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id", insertable = false, updatable = false)
+    private Country country;
+
 }

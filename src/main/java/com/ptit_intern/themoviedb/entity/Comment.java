@@ -21,4 +21,11 @@ public class Comment extends BaseEntity{
     private Long movieId;
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id", insertable = false, updatable = false)
+    private Movie movie;
 }

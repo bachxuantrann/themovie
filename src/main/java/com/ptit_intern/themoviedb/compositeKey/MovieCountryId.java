@@ -12,18 +12,18 @@ import java.util.Objects;
 @AllArgsConstructor
 public class MovieCountryId implements Serializable {
     private Long movieId;
-    private String countryCode;
+    private String countryId;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MovieCountryId that = (MovieCountryId) o;
-        return Objects.equals(movieId, that.movieId) && Objects.equals(countryCode, that.countryCode);
+        return Objects.equals(movieId, that.movieId) && Objects.equals(countryId, that.countryId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(movieId, countryCode);
+        return Objects.hash(movieId, countryId);
     }
 }

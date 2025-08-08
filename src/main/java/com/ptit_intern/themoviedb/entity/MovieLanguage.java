@@ -20,6 +20,13 @@ public class MovieLanguage {
     @Column(name = "movie_id")
     Long movieId;
     @Id
-    @Column(name = "language_code")
-    String languageCode;
+    @Column(name = "language_id")
+    String languageId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "movie_id", insertable = false, updatable = false)
+    private Movie movie;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "language_id", insertable = false, updatable = false)
+    private Language language;
 }
