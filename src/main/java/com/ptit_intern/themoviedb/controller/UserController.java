@@ -1,6 +1,7 @@
 package com.ptit_intern.themoviedb.controller;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
+import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
 import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
 import com.ptit_intern.themoviedb.entity.User;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
@@ -45,5 +46,12 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO> createUser(@RequestBody @Valid User user) throws InvalidExceptions {
         return ResponseEntity.ok().body(userService.createUser(user));
+    }
+    @PutMapping("/change-password")
+    @ApiMessage("change user password")
+    @PreAuthorize("hasRole('ADMIN') or authentication.name == @userServiceImpl.getUsernameById(#request.id)")
+    public ResponseEntity<String> changePassword(@RequestBody @Valid ChangePasswordRequest request) throws InvalidExceptions {
+        this.userService.changePassword(request);
+        return ResponseEntity.ok().body("Password changed");
     }
 }

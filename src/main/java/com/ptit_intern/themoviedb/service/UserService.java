@@ -1,6 +1,7 @@
 package com.ptit_intern.themoviedb.service;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
+import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
 import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
 import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
 import com.ptit_intern.themoviedb.entity.User;
@@ -21,4 +22,5 @@ public interface UserService {
     UserDTO getDetailUser(Long id);
     void deleteUser(Long id);
     UserDTO createUser(User user) throws InvalidExceptions;
+    void changePassword(ChangePasswordRequest changePasswordRequest) throws InvalidExceptions;
 }

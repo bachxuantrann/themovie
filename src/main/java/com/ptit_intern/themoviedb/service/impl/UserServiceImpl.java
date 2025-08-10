@@ -1,6 +1,7 @@
 package com.ptit_intern.themoviedb.service.impl;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
+import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
 import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
 import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
 import com.ptit_intern.themoviedb.entity.User;
@@ -13,6 +14,8 @@ import com.ptit_intern.themoviedb.service.cloudinary.UploadOptions;
 import com.ptit_intern.themoviedb.util.enums.RoleEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -172,5 +175,17 @@ public class UserServiceImpl implements UserService {
         newUser.setAvatarUrl(avatarDefault);
         newUser.setAvatarPublicId(cloudinaryService.extractPublicIdFromUrl(newUser.getAvatarUrl()));
         return this.userRepository.save(newUser).toDTO(UserDTO.class);
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequest changePasswordRequest) throws InvalidExceptions {
+        User user = this.userRepository.findById(changePasswordRequest.getId()).orElseThrow(
+                ()-> new UsernameNotFoundException("user not found")
+        );
+        if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
+            throw new InvalidExceptions("Old password does not match");
+        }
+        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+        this.userRepository.save(user);
     }
 }
