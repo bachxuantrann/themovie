@@ -18,12 +18,10 @@ import java.io.IOException;
 public class UserController {
     private final UserService userService;
 
-    @PutMapping
+    @PutMapping()
     @ApiMessage("update info of user")
-    @PreAuthorize("hasRole('ADMIN') or authentication.name == @userServiceImpl.getUsernameById(#id)")
-    public ResponseEntity<UserDTO> updateUser(@RequestBody UploadUserRequest uploadUserRequest
-            , @RequestParam(required = false) MultipartFile avatar, @RequestParam(required = false) Boolean removeAvatar
-    ) throws IOException {
-        return ResponseEntity.ok().body(this.userService.updateUser(uploadUserRequest, avatar, removeAvatar));
+    @PreAuthorize("hasRole('ADMIN') or authentication.name == @userServiceImpl.getUsernameById(#request.id)")
+    public ResponseEntity<UserDTO> updateUser(@ModelAttribute UploadUserRequest request) throws IOException {
+        return ResponseEntity.ok().body(this.userService.updateUser(request));
     }
 }

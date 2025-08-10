@@ -10,6 +10,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -22,6 +23,8 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.util.List;
+import java.util.Map;
 
 @Configuration
 @EnableMethodSecurity
@@ -50,7 +53,7 @@ public class SecurityConfiguration {
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer((oauth2) ->
-                        oauth2.jwt(Customizer.withDefaults())
+                        oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                                 .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
                 .formLogin(Customizer.withDefaults())
@@ -59,14 +62,16 @@ public class SecurityConfiguration {
     }
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new
-                JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthorityPrefix("");
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("user");
-        JwtAuthenticationConverter jwtAuthenticationConverter = new
-                JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
-        return jwtAuthenticationConverter;
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Map<String, Object> user = jwt.getClaim("user");
+            if (user != null && user.get("role") != null) {
+                String role = user.get("role").toString();
+                return List.of(new SimpleGrantedAuthority("ROLE_" + role));
+            }
+            return List.of();
+        });
+        return converter;
     }
     @Bean
     public JwtDecoder jwtDecoder(){

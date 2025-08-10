@@ -15,6 +15,6 @@ public interface UserService {
     boolean isUserExist(String username);
     User registerUser(RegisterRequest registerRequest);
     void clearUserToken(String username);
-    UserDTO updateUser(UploadUserRequest uploadUserRequest, MultipartFile avatar, Boolean removeAvatar) throws IOException;
+    UserDTO updateUser(UploadUserRequest uploadUserRequest) throws IOException;
     String getUsernameById(Long id) throws IdInvalidExceptions;
 }

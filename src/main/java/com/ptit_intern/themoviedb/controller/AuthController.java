@@ -50,7 +50,7 @@ public class AuthController {
         AuthResponse authResponse = new AuthResponse();
         User currentUser = this.userService.handleGetUserByUsername(authRequest.getUsername());
         AuthResponse.InfoResponse infoResponse = new AuthResponse.InfoResponse
-                (currentUser.getId(), currentUser.getUsername(), currentUser.getRole().name(), currentUser.getFullName(), currentUser.getDescription(), currentUser.getAvatarUrl());
+                (currentUser.getId(), currentUser.getUsername(), currentUser.getRole(), currentUser.getFullName(), currentUser.getDescription(), currentUser.getAvatarUrl());
         authResponse.setInfoResponse(infoResponse);
         String accessToken = this.securityUtil.createAccessToken(authentication, authResponse.getInfoResponse());
         authResponse.setAccessToken(accessToken);
@@ -78,7 +78,7 @@ public class AuthController {
                 newUser.getUsername(), null, List.of(new SimpleGrantedAuthority(newUser.getRole().name()))
         );
         AuthResponse.InfoResponse infoResponse = AuthResponse.InfoResponse.builder()
-                .id(newUser.getId()).username(newUser.getUsername()).role(newUser.getRole().name()).build();
+                .id(newUser.getId()).username(newUser.getUsername()).role(newUser.getRole()).build();
 //      Create access token
         String accessToken = this.securityUtil.createAccessToken(authentication, infoResponse);
 //      Create refresh token
@@ -135,7 +135,7 @@ public class AuthController {
         if (currentUser != null) {
             infoResponse.setId(currentUser.getId());
             infoResponse.setUsername(currentUser.getUsername());
-            infoResponse.setRole(currentUser.getRole().name());
+            infoResponse.setRole(currentUser.getRole());
             infoResponse.setAvatarUrl(currentUser.getAvatarUrl());
             infoResponse.setFullName(currentUser.getFullName());
             infoResponse.setDescription(currentUser.getDescription());

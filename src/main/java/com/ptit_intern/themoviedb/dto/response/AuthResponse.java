@@ -1,5 +1,6 @@
 package com.ptit_intern.themoviedb.dto.response;
 
+import com.ptit_intern.themoviedb.util.enums.RoleEnum;
 import lombok.*;
 
 @Getter
@@ -18,7 +19,7 @@ public class AuthResponse {
     public static class InfoResponse {
         private Long id;
         private String username;
-        private String role;
+        private RoleEnum role;
         private String fullName;
         private String description;
         private String avatarUrl;

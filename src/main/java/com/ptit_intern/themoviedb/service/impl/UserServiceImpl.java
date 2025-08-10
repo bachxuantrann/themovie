@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Slf4j
-@Service
+@Service("userServiceImpl")
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setUsername(registerRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setRole(RoleEnum.ADMIN);
+        user.setRole(RoleEnum.USER);
         return this.userRepository.save(user);
     }
 
@@ -63,11 +63,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO updateUser(UploadUserRequest uploadUserRequest, MultipartFile avatar, Boolean removeAvatar) throws IOException {
+    public UserDTO updateUser(UploadUserRequest uploadUserRequest) throws IOException {
         User user = userRepository.findById(uploadUserRequest.getId()).orElseThrow(()-> new IllegalStateException("User Not Found"));
-        String fullName = uploadUserRequest.getFullName().trim() == null ? "" : uploadUserRequest.getFullName().trim();
-        String email = uploadUserRequest.getEmail().trim() == null ? "" : uploadUserRequest.getEmail().trim();
-        String description = uploadUserRequest.getDescription().trim() == null ? "" : uploadUserRequest.getDescription().trim();
+        MultipartFile avatar = uploadUserRequest.getAvatar();
+        Boolean removeAvatar = uploadUserRequest.getRemoveAvatar();
+        String fullName = uploadUserRequest.getFullName() == null ? "" : uploadUserRequest.getFullName().trim();
+        String email = uploadUserRequest.getEmail() == null ? "" : uploadUserRequest.getEmail().trim();
+        String description = uploadUserRequest.getDescription() == null ? "" : uploadUserRequest.getDescription().trim();
         if ( fullName != "") user.setFullName(fullName);
         if ( email != "") user.setEmail(email);
         if ( description != "") user.setDescription(description);
@@ -82,6 +84,12 @@ public class UserServiceImpl implements UserService {
             String newPublicId = uploadRes.publicId();
             String oldUrl = user.getAvatarUrl();
             String oldPublicId = user.getAvatarPublicId();
+            if(newUrl != null && !newUrl.isEmpty()){
+                user.setAvatarUrl(newUrl);
+            }
+            if (newPublicId != null && !newPublicId.isEmpty()){
+                user.setAvatarPublicId(newPublicId);
+            }
             try{
                 if (oldPublicId != null && !oldPublicId.isBlank()){
                     cloudinaryService.deleteImageByPublicId(oldPublicId);
