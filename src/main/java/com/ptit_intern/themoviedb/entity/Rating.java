@@ -16,10 +16,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Rating extends BaseEntity {
-    @Column(name = "user_id", nullable = false)
-    Long userId;
-    @Column(name = "movie_id", nullable = false)
-    Long movieId;
     @Column(name = "score", nullable = false, precision = 2, scale = 1)
     private BigDecimal score;
     //  Relationships

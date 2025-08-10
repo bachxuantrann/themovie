@@ -1,7 +1,13 @@
 package com.ptit_intern.themoviedb.service;
 
+import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
 import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
+import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
 import com.ptit_intern.themoviedb.entity.User;
+import com.ptit_intern.themoviedb.exception.IdInvalidExceptions;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 public interface UserService {
     User handleGetUserByUsername(String username);
@@ -9,4 +15,6 @@ public interface UserService {
     boolean isUserExist(String username);
     User registerUser(RegisterRequest registerRequest);
     void clearUserToken(String username);
+    UserDTO updateUser(UploadUserRequest uploadUserRequest, MultipartFile avatar, Boolean removeAvatar) throws IOException;
+    String getUsernameById(Long id) throws IdInvalidExceptions;
 }

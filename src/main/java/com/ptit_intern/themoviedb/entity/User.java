@@ -33,6 +33,8 @@ public class User  extends BaseEntity<UserDTO> {
     String description;
     @Column(columnDefinition = "MEDIUMTEXT",name = "avatar_url")
     String avatarUrl;
+    @Column(columnDefinition = "MEDIUMTEXT",name = "avatar_public_id")
+    String avatarPublicId;
     @Column(columnDefinition = "MEDIUMTEXT",name = "refresh_token")
     String refreshToken;
     // Relationships

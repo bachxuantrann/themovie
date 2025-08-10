@@ -1,19 +1,31 @@
 package com.ptit_intern.themoviedb.service.impl;
 
+import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
 import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
+import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
 import com.ptit_intern.themoviedb.entity.User;
+import com.ptit_intern.themoviedb.exception.IdInvalidExceptions;
 import com.ptit_intern.themoviedb.repository.UserRepository;
 import com.ptit_intern.themoviedb.service.UserService;
+import com.ptit_intern.themoviedb.service.cloudinary.CloudinaryService;
+import com.ptit_intern.themoviedb.service.cloudinary.UploadOptions;
 import com.ptit_intern.themoviedb.util.enums.RoleEnum;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.List;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     public User handleGetUserByUsername(String username) {
@@ -48,5 +60,57 @@ public class UserServiceImpl implements UserService {
             user.setRefreshToken(null);
             this.userRepository.save(user);
         }
+    }
+
+    @Override
+    public UserDTO updateUser(UploadUserRequest uploadUserRequest, MultipartFile avatar, Boolean removeAvatar) throws IOException {
+        User user = userRepository.findById(uploadUserRequest.getId()).orElseThrow(()-> new IllegalStateException("User Not Found"));
+        String fullName = uploadUserRequest.getFullName().trim() == null ? "" : uploadUserRequest.getFullName().trim();
+        String email = uploadUserRequest.getEmail().trim() == null ? "" : uploadUserRequest.getEmail().trim();
+        String description = uploadUserRequest.getDescription().trim() == null ? "" : uploadUserRequest.getDescription().trim();
+        if ( fullName != "") user.setFullName(fullName);
+        if ( email != "") user.setEmail(email);
+        if ( description != "") user.setDescription(description);
+        boolean hasNewAvatar = avatar != null && !avatar.isEmpty();
+        boolean wantRemoveAvatar = Boolean.TRUE.equals(removeAvatar);
+        if (hasNewAvatar) {
+            UploadOptions options = new UploadOptions();
+            options.setFolder("users");
+            options.setTags(List.of("user","avatar"));
+            var uploadRes = cloudinaryService.uploadFileWithPublicId(avatar, options);
+            String newUrl = uploadRes.secureUrl();
+            String newPublicId = uploadRes.publicId();
+            String oldUrl = user.getAvatarUrl();
+            String oldPublicId = user.getAvatarPublicId();
+            try{
+                if (oldPublicId != null && !oldPublicId.isBlank()){
+                    cloudinaryService.deleteImageByPublicId(oldPublicId);
+                } else if (oldUrl!=null && !oldUrl.isBlank()){
+                    cloudinaryService.deleteImageByUrl(oldUrl);
+                }
+            } catch (Exception ex){
+                log.warn("Xóa ảnh cũ trên Cloudinary thất bại (không rollback): userId={}, oldPublicId={}, oldUrl={}, error={}",
+                        user.getId(), oldPublicId, oldUrl, ex.getMessage());
+            }
+        } else if (wantRemoveAvatar) {
+            String publicId = user.getAvatarPublicId();
+            String url = user.getAvatarUrl();
+            if (publicId != null && !publicId.isBlank()) {
+                cloudinaryService.deleteImageByPublicId(publicId);
+            } else if (url != null && !url.isBlank()) {
+                cloudinaryService.deleteImageByUrl(url);
+            }
+            user.setAvatarPublicId(null);
+            user.setAvatarUrl(null);
+        }
+        this.userRepository.save(user);
+        return user.toDTO(UserDTO.class);
+    }
+
+    @Override
+    public String getUsernameById(Long id) throws IdInvalidExceptions {
+        return this.userRepository.findById(id)
+                .orElseThrow(() -> new IdInvalidExceptions("user not found"))
+                .getUsername();
     }
 }

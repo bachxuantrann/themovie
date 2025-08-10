@@ -14,5 +14,6 @@ public class UserDTO {
     String email;
     String fullName;
     String description;
-    String avatar_url;
+    String avatarUrl;
+    String avatarPublicId;
 }

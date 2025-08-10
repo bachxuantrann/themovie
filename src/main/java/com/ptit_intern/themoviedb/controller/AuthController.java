@@ -5,6 +5,7 @@ import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
 import com.ptit_intern.themoviedb.dto.response.AuthResponse;
 import com.ptit_intern.themoviedb.dto.response.RegisterResponse;
 import com.ptit_intern.themoviedb.entity.User;
+import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.exception.UserExisted;
 import com.ptit_intern.themoviedb.service.UserService;
 import com.ptit_intern.themoviedb.util.SecurityUtil;
@@ -101,16 +102,16 @@ public class AuthController {
     //  Log out account
     @PostMapping("/logout")
     @ApiMessage("user log out")
-    public ResponseEntity<String> logout(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
+    public ResponseEntity<String> logout(@CookieValue(name = "refreshToken", required = false) String refreshToken) throws InvalidExceptions {
         if (refreshToken == null || refreshToken.isEmpty()) {
-            return ResponseEntity.badRequest().body("Refresh Token is missing!");
+            throw new InvalidExceptions("Refresh token is missing");
         }
         String username;
         try {
             Jwt decodedToken = securityUtil.decodeJwt(refreshToken);
             username = decodedToken.getSubject();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Refresh Token is invalid!");
+            throw new InvalidExceptions("Refresh token is invalid");
         }
         this.userService.clearUserToken(username);
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")

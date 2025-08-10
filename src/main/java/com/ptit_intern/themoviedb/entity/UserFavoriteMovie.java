@@ -14,11 +14,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserFavoriteMovie extends BaseEntity {
-    @Column(name = "user_id", nullable = false)
-    Long userId;
-    @Column(name = "movie_id", nullable = false)
-    Long movieId;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;

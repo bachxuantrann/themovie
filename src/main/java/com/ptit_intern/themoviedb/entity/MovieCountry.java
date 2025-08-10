@@ -14,14 +14,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MovieCountry extends BaseEntity {
-    @Column(name = "movie_id", nullable = false)
-    Long movieId;
-    @Column(name = "country_id", nullable = false)
-    private String countryId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "movie_id", insertable = false, updatable = false)
     private Movie movie;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id", insertable = false, updatable = false)
     private Country country;

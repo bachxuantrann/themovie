@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,9 +23,10 @@ public class GlobalExceptionHandler {
             IdInvalidExceptions.class,
             UsernameNotFoundException.class,
             BadCredentialsException.class,
-            UserExisted.class
+            UserExisted.class,
+            InvalidExceptions.class
     })
-    public ResponseEntity<RestResponse<Object>> handleIdInvalidExceptions(Exception ex) {
+    public ResponseEntity<RestResponse<Object>> handleInvalidExceptions(Exception ex) {
         RestResponse<Object> res = new RestResponse<Object>();
         res.setStatusCode(HttpStatus.BAD_REQUEST.value());
         res.setError(ex.getMessage());
@@ -60,6 +62,31 @@ public class GlobalExceptionHandler {
         res.setStatusCode(HttpStatus.NOT_FOUND.value());
         res.setError(ex.getMessage());
         res.setMessage("404... Resource not found... ");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+    }
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<RestResponse<Object>> handleIOException(IOException ex) {
+        RestResponse<Object> res = new RestResponse<>();
+        res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        res.setError(ex.getMessage());
+        res.setMessage("Lỗi xử lý file hoặc upload ảnh.");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+    }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<RestResponse<Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        RestResponse<Object> res = new RestResponse<>();
+        res.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        res.setError(ex.getMessage());
+        res.setMessage("Lỗi dữ liệu đầu vào.");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<RestResponse<Object>> handleRuntimeException(RuntimeException ex) {
+        RestResponse<Object> res = new RestResponse<>();
+        res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        res.setError(ex.getMessage());
+        res.setMessage("Lỗi hệ thống.");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+    }
+
 }
