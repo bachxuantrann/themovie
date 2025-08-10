@@ -3,6 +3,7 @@ package com.ptit_intern.themoviedb.exception;
 import com.ptit_intern.themoviedb.dto.response.RestResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
@@ -24,7 +25,8 @@ public class GlobalExceptionHandler {
             UsernameNotFoundException.class,
             BadCredentialsException.class,
             UserExisted.class,
-            InvalidExceptions.class
+            InvalidExceptions.class,
+            AccessDeniedException.class
     })
     public ResponseEntity<RestResponse<Object>> handleInvalidExceptions(Exception ex) {
         RestResponse<Object> res = new RestResponse<Object>();

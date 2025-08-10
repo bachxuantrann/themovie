@@ -5,6 +5,7 @@ import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
 import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
 import com.ptit_intern.themoviedb.entity.User;
 import com.ptit_intern.themoviedb.exception.IdInvalidExceptions;
+import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.repository.UserRepository;
 import com.ptit_intern.themoviedb.service.UserService;
 import com.ptit_intern.themoviedb.service.cloudinary.CloudinaryService;
@@ -12,6 +13,7 @@ import com.ptit_intern.themoviedb.service.cloudinary.UploadOptions;
 import com.ptit_intern.themoviedb.util.enums.RoleEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +28,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
-
+    private String avatarDefault = "https://res.cloudinary.com/dpioj21ib/image/upload/v1754814358/default-avatar-icon-of-social-media-user-vector_vqtt1m.jpg";
     @Override
     public User handleGetUserByUsername(String username) {
         return this.userRepository.findByUsername(username);
@@ -120,5 +122,55 @@ public class UserServiceImpl implements UserService {
         return this.userRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidExceptions("user not found"))
                 .getUsername();
+    }
+
+    @Override
+    public UserDTO getDetailUser(Long id) {
+        return this.userRepository.findById(id).orElseThrow(
+                ()-> new UsernameNotFoundException("user not found")
+        ).toDTO(UserDTO.class);
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        User user = this.userRepository.findById(id).orElseThrow(
+                ()-> new UsernameNotFoundException("user not found")
+        );
+        String avatarUrl = user.getAvatarUrl();
+        String publicId = user.getAvatarPublicId();
+        try {
+            if (publicId != null && !publicId.isBlank()){
+                cloudinaryService.deleteImageByPublicId(publicId);
+            } else if (avatarUrl!=null && !avatarUrl.isBlank()){
+                cloudinaryService.deleteImageByUrl(avatarUrl);
+            }
+        } catch (Exception ex){
+            log.warn("Xóa ảnh  trên Cloudinary thất bại (không rollback): userId={}, oldPublicId={}, oldUrl={}, error={}",
+                    user.getId(), publicId, avatarUrl, ex.getMessage());
+        }
+        this.userRepository.delete(user);
+    }
+
+    @Override
+    public UserDTO createUser(User user) throws InvalidExceptions {
+        User newUser = new User();
+        if (handleGetUserByUsername(user.getUsername()) != null) {
+            throw new InvalidExceptions("User is existed");
+        }
+        newUser.setUsername(user.getUsername().trim());
+        newUser.setPassword(user.getPassword().trim());
+        newUser.setRole(user.getRole());
+        if(user.getEmail()!=null && !user.getEmail().isEmpty()){
+            newUser.setEmail(user.getEmail().trim());
+        }
+        if (user.getFullName()!=null && !user.getFullName().isEmpty()){
+            newUser.setFullName(user.getFullName().trim());
+        }
+        if (user.getDescription()!=null && !user.getDescription().isEmpty()){
+            newUser.setDescription(user.getDescription().trim());
+        }
+        newUser.setAvatarUrl(avatarDefault);
+        newUser.setAvatarPublicId(cloudinaryService.extractPublicIdFromUrl(newUser.getAvatarUrl()));
+        return this.userRepository.save(newUser).toDTO(UserDTO.class);
     }
 }

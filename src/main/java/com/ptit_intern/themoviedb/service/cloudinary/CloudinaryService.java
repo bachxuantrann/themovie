@@ -28,7 +28,7 @@ public class CloudinaryService {
 
     }
 
-    private void validateImage(MultipartFile file) {
+    public void validateImage(MultipartFile file) {
         String contentType = file.getContentType();
         if (file.isEmpty()) {
             throw new IllegalArgumentException("Ảnh không được rỗng.");
@@ -41,7 +41,7 @@ public class CloudinaryService {
         }
     }
 
-    private String extractPublicIdFromUrl(String imageUrl) {
+    public String extractPublicIdFromUrl(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) {
             throw new IllegalArgumentException("URL ảnh không hợp lệ");
         }
