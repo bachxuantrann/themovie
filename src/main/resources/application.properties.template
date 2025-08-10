@@ -1,0 +1,32 @@
+spring.application.name=themoviedb
+spring.devtools.restart.enabled=true
+
+# Config Spring Data JPA
+spring.jpa.hibernate.ddl-auto=update
+spring.datasource.url=jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:themoviedb}
+spring.datasource.username=${DB_USERNAME:root}
+spring.datasource.password=${DB_PASSWORD:}
+spring.datasource.driver-class-name=${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+
+# Fix deprecated MySQL8Dialect warning
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+spring.jpa.show-sql=true
+
+# Fix JPA open-in-view warning
+spring.jpa.open-in-view=false
+
+# JWT Config
+themoviedb.jwt.base64-secret=${JWT_SECRET}
+themoviedb.jwt.access-token-validity-in-seconds=${JWT_ACCESS_TOKEN_VALIDITY:86400}
+themoviedb.jwt.refresh-token-validity-in-seconds=${JWT_REFRESH_TOKEN_VALIDITY:604800}
+
+# Pagination
+spring.data.web.pageable.one-indexed-parameters=true
+
+# Logging
+logging.level.org.springframework.security=${LOG_LEVEL:info}
+
+# Cloudinary
+cloudinary.cloud-name=${CLOUDINARY_CLOUD_NAME}
+cloudinary.api-key=${CLOUDINARY_API_KEY}
+cloudinary.api-secret=${CLOUDINARY_API_SECRET}

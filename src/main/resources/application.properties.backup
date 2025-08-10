@@ -1,0 +1,27 @@
+spring.application.name=themoviedb
+spring.devtools.restart.enabled=true
+
+#config spring data jpa
+spring.jpa.hibernate.ddl-auto=update
+spring.datasource.url=jdbc:mysql://localhost:3306/themoviedb
+spring.datasource.username=root
+spring.datasource.password=
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.database-platform=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.show-sql= true
+
+# JWT config
+themoviedb.jwt.base64-secret=qoAEABDke07+AVLepXB4aCMtsT0wMAqR5x2VFyldsnx6e75YQkJH2UcZKTjEyoNgG71SBCXfq5N6NVZxWOfsHQ==
+themoviedb.jwt.access-token-validity-in-seconds=8640000
+themoviedb.jwt.refresh-token-validity-in-seconds=8640000
+
+# Pagination
+spring.data.web.pageable.one-indexed-parameters=true
+
+# Logging
+logging.level.org.springframework.security=debug
+
+# Cloudinary
+cloudinary.cloud-name=dpioj21ib
+cloudinary.api-key=789456919488225
+cloudinary.api-secret=uJHaFqueUmYnhTX2hnCdmioZ0YI
