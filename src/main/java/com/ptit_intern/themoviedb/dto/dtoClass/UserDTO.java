@@ -4,6 +4,8 @@ import com.ptit_intern.themoviedb.util.enums.RoleEnum;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.Instant;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -18,4 +20,8 @@ public class UserDTO {
     String description;
     String avatarUrl;
     String avatarPublicId;
+    Instant created_at;
+    Instant updated_at;
+    String created_by;
+    String updated_by;
 }

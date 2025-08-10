@@ -3,6 +3,7 @@ package com.ptit_intern.themoviedb.controller;
 import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
 import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
 import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.User;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.service.UserService;
@@ -47,11 +48,30 @@ public class UserController {
     public ResponseEntity<UserDTO> createUser(@RequestBody @Valid User user) throws InvalidExceptions {
         return ResponseEntity.ok().body(userService.createUser(user));
     }
-    @PutMapping("/change-password")
+    @PutMapping("/user-change-password")
     @ApiMessage("change user password")
-    @PreAuthorize("hasRole('ADMIN') or authentication.name == @userServiceImpl.getUsernameById(#request.id)")
-    public ResponseEntity<String> changePassword(@RequestBody @Valid ChangePasswordRequest request) throws InvalidExceptions {
-        this.userService.changePassword(request);
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<String> changePasswordByUser(@RequestBody @Valid ChangePasswordRequest request) throws InvalidExceptions {
+        this.userService.changePasswordByUser(request);
+        return ResponseEntity.ok().body("Password changed");
+    }
+    @GetMapping
+    @ApiMessage("seach and pagination list user")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResultPagination> searchAndPagination(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false,defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "true") boolean desc
+    )
+    {
+        return ResponseEntity.ok().body(this.userService.searchAndPagination(page,size,keyword,desc));
+    }
+    @PutMapping("/admin-change-password/{id}")
+    @ApiMessage("admin change password of user")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> changePasswordByAdmin(@PathVariable Long id, @RequestParam String password) throws InvalidExceptions {
+        this.userService.changePasswordByAdmin(id,password);
         return ResponseEntity.ok().body("Password changed");
     }
 }

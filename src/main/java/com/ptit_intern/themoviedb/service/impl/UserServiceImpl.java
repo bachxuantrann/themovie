@@ -4,6 +4,7 @@ import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
 import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
 import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
 import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.User;
 import com.ptit_intern.themoviedb.exception.IdInvalidExceptions;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
@@ -14,6 +15,10 @@ import com.ptit_intern.themoviedb.service.cloudinary.UploadOptions;
 import com.ptit_intern.themoviedb.util.enums.RoleEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,7 +27,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service("userServiceImpl")
@@ -178,14 +185,44 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changePassword(ChangePasswordRequest changePasswordRequest) throws InvalidExceptions {
+    public void changePasswordByUser(ChangePasswordRequest changePasswordRequest) throws InvalidExceptions {
         User user = this.userRepository.findById(changePasswordRequest.getId()).orElseThrow(
                 ()-> new UsernameNotFoundException("user not found")
         );
-        if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword().trim())) {
             throw new InvalidExceptions("Old password does not match");
         }
-        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword().trim()));
+        this.userRepository.save(user);
+    }
+
+    @Override
+    public ResultPagination searchAndPagination(int page, int size, String keyword, boolean desc) {
+        Sort sort = Sort.by("created_at");
+        if (desc) sort = sort.descending();
+        Pageable pageable = PageRequest.of(page-1, size, sort);
+        Page<User> users =this.userRepository.searchUsers(keyword, pageable);
+        List<UserDTO> userDTOS = new ArrayList<>();
+        userDTOS = users.getContent().stream().map(user -> user.toDTO(UserDTO.class)).collect(Collectors.toList());
+        ResultPagination resultPagination = new ResultPagination();
+        resultPagination.setResults(userDTOS);
+        ResultPagination.MetaInfo metaInfo = new ResultPagination.MetaInfo();
+        metaInfo.setTotal(users.getTotalElements());
+        metaInfo.setPage(page);
+        metaInfo.setSize(size);
+        metaInfo.setTotalPages(users.getTotalPages());
+        resultPagination.setMetaInfo(metaInfo);
+        return resultPagination;
+    }
+
+    @Override
+    public void changePasswordByAdmin(Long id, String password) throws InvalidExceptions {
+        User user = this.userRepository.findById(id).orElseThrow(
+                ()-> new UsernameNotFoundException("user not found")
+        );
+        if (password != null && !password.trim().isEmpty()){
+            user.setPassword(passwordEncoder.encode(password.trim()));
+        }
         this.userRepository.save(user);
     }
 }

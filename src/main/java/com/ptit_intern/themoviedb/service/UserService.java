@@ -4,6 +4,7 @@ import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
 import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
 import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
 import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.User;
 import com.ptit_intern.themoviedb.exception.IdInvalidExceptions;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
@@ -22,5 +23,7 @@ public interface UserService {
     UserDTO getDetailUser(Long id);
     void deleteUser(Long id);
     UserDTO createUser(User user) throws InvalidExceptions;
-    void changePassword(ChangePasswordRequest changePasswordRequest) throws InvalidExceptions;
+    void changePasswordByUser(ChangePasswordRequest changePasswordRequest) throws InvalidExceptions;
+    ResultPagination searchAndPagination(int page,int size, String keyword, boolean desc);
+    void changePasswordByAdmin(Long id, String password) throws InvalidExceptions;
 }
