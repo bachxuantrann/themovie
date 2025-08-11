@@ -3,10 +3,7 @@ package com.ptit_intern.themoviedb.entity;
 import com.ptit_intern.themoviedb.util.enums.GenderEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
@@ -19,6 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class Person extends BaseEntity {
     @NotBlank(message = "name of person is required")
     @Column(name = "name", nullable = false)
