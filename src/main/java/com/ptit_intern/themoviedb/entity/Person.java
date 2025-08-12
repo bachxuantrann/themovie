@@ -23,6 +23,8 @@ public class Person extends BaseEntity {
     String name;
     @Column(name = "profile_path",columnDefinition = "TEXT")
     String profilePath;
+    @Column(name = "profile_public_id",columnDefinition = "TEXT")
+    String profilePublicId;
     @Column(columnDefinition = "TEXT")
     String biography;
     @Column(name = "birth_date")

@@ -32,11 +32,15 @@ public class Movie extends BaseEntity {
     Integer runtime;
     @Column(name = "poster_path")
     String posterPath;
+    @Column(name = "poster_public_id")
+    String posterPublicId;
+    @Column(name = "backdrop_public_id")
+    String backdropPublicId;
     @Column(name = "backdrop_path")
     String backdropPath;
     @DecimalMin("0.0")
-    @DecimalMax("10.0")
-    @Column(precision = 4, scale = 1,name = "vote_average")
+    @DecimalMax("100.0")
+    @Column(precision = 5, scale = 2,name = "vote_average")
     BigDecimal voteAverage;
     @Column(name = "vote_count")
     Integer voteCount;

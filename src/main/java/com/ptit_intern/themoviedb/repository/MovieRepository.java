@@ -8,6 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     @Query("SELECT m FROM Movie m JOIN MovieGenre mg ON m.id = mg.movie.id WHERE mg.genre.id = :genreId")
@@ -27,4 +30,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     @Query("SELECT m FROM Movie m JOIN MovieCast mc ON m.id = mc.movie.id WHERE mc.person.id = :personId AND mc.job = :job")
     Page<Movie> findByPersonIdAndJob(@Param("personId") Long personId, @Param("job") String job, Pageable pageable);
+
+    Optional<Movie> findByTitleAndReleaseDate(String title, LocalDate releaseDate);
+    boolean existsByTitleAndReleaseDate(String title, LocalDate releaseDate);
 }

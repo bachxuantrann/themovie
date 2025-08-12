@@ -106,7 +106,7 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
 
     @Override
     @Transactional
-    public void removeRelationships(Long movieId, String type, Long entityId) throws InvalidExceptions {
+    public void removeRelationship(Long movieId, String type, Long entityId) throws InvalidExceptions {
         RelationshipType relationshipType = RelationshipType.fromString(type);
         validateMovieExists(movieId);
 
@@ -192,7 +192,7 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
         validateMovieExists(movieId);
         entityIds.forEach(entityId -> {
             try {
-                removeRelationships(movieId, type, entityId);
+                removeRelationship(movieId, type, entityId);
             } catch (InvalidExceptions e) {
                 throw new RuntimeException(e);
             }
@@ -447,7 +447,8 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
             case LANGUAGES -> relationshipRepositoryFactory.getMovieLanguageRepository().deleteByMovieId(movieId);
             case COMPANIES -> relationshipRepositoryFactory.getMovieCompanyRepository().deleteByMovieId(movieId);
             case CAST -> relationshipRepositoryFactory.getMovieCastRepository().deleteByMovieIdAndJob(movieId, "actor");
-            case CREW -> relationshipRepositoryFactory.getMovieCastRepository().deleteByMovieIdAndJobNot(movieId, "actor");
+            case CREW ->
+                    relationshipRepositoryFactory.getMovieCastRepository().deleteByMovieIdAndJobNot(movieId, "actor");
         }
     }
 
@@ -461,12 +462,29 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
     @SneakyThrows
     private void validateEntityIds(RelationshipType type, List<Long> entityIds) {
         switch (type) {
-            case GENRES -> entityIds.forEach(this::validateGenreExists);
-            case COUNTRIES -> entityIds.forEach(this::validateCountryExists);
-            case LANGUAGES -> entityIds.forEach(this::validateLanguageExists);
-            case COMPANIES -> entityIds.forEach(this::validateCompanyExists);
+            case GENRES:
+                for (Long id : entityIds) {
+                    validateGenreExists(id);
+                }
+                break;
+            case COUNTRIES:
+                for (Long id : entityIds) {
+                    validateCountryExists(id);
+                }
+                break;
+            case LANGUAGES:
+                for (Long id : entityIds) {
+                    validateLanguageExists(id);
+                }
+                break;
+            case COMPANIES:
+                for (Long id : entityIds) {
+                    validateCompanyExists(id);
+                }
+                break;
         }
     }
+
 
     private void validateGenreExists(Long genreId) throws InvalidExceptions {
         if (!relationshipRepositoryFactory.getGenreRepository().existsById(genreId)) {
@@ -474,13 +492,13 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
         }
     }
 
-    private void validateCountryExists(Long countryId)  throws InvalidExceptions{
+    private void validateCountryExists(Long countryId) throws InvalidExceptions {
         if (!relationshipRepositoryFactory.getCountryRepository().existsById(countryId)) {
             throw new InvalidExceptions("Country not found with id: " + countryId);
         }
     }
 
-    private void validateLanguageExists(Long languageId) throws InvalidExceptions{
+    private void validateLanguageExists(Long languageId) throws InvalidExceptions {
         if (!relationshipRepositoryFactory.getLanguageRepository().existsById(languageId)) {
             throw new InvalidExceptions("Language not found with id: " + languageId);
         }

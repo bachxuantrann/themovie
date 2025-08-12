@@ -21,6 +21,8 @@ public class Company extends BaseEntity {
     String name;
     @Column(name = "logo_path",columnDefinition = "TEXT")
     String logoPath;
+    @Column(name = "logo_public_id",columnDefinition = "TEXT")
+    String logoPublicId;
     // Relationships
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<MovieCompany> movieCompanies = new HashSet<>();

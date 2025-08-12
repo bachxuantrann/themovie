@@ -16,14 +16,13 @@ public interface MovieRelationshipService {
 
     void addRelationships(Long movieId, String type, List<Long> entityIds) throws InvalidExceptions;
 
-    void removeRelationships(Long movieId, String type, Long entityId) throws InvalidExceptions;
+    void removeRelationship(Long movieId, String type, Long entityId) throws InvalidExceptions;
 
     void addMovieCast(Long movieId, List<CastRequest> castRequests) throws InvalidExceptions;
     void addMovieCrew(Long movieId,List<CrewRequest> crewRequests) throws InvalidExceptions;
 //    Bulk operations
     void bulkAddRelationships(Long movieId, String type, BulkRelationshipRequest request) throws InvalidExceptions;
     void bulkRemoveRelationships(Long movieId,String type, List<Long> entityIds) throws InvalidExceptions;
-
     Page<Movie> getMoviesByEntity(String entityType, Long entityId, String job, Pageable pageable);
     RelationshipStatsDTO getRelationshipStats(Long movieId) throws InvalidExceptions;
 }
