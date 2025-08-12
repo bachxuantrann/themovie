@@ -1,5 +1,6 @@
 package com.ptit_intern.themoviedb.entity;
 
+import com.ptit_intern.themoviedb.dto.dtoClass.PersonDTO;
 import com.ptit_intern.themoviedb.util.enums.GenderEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -12,12 +13,13 @@ import java.util.Set;
 
 @Entity
 @Table(name = "persons")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-public class Person extends BaseEntity {
+public class Person extends BaseEntity<PersonDTO> {
     @NotBlank(message = "name of person is required")
     @Column(name = "name", nullable = false)
     String name;

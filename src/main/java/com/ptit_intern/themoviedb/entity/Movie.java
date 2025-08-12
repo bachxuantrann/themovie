@@ -1,12 +1,12 @@
 package com.ptit_intern.themoviedb.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
@@ -16,11 +16,12 @@ import java.util.Set;
 
 @Entity
 @Table(name = "movies")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Movie extends BaseEntity {
+public class Movie extends BaseEntity<MovieDTO> {
     @Column(name = "title", nullable = false)
     String title;
     @Column(name = "original_title")

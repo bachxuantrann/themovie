@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LanguageDTO {
+public class LanguageDTO extends BaseDTO{
     private Long id;
     private String name;
     private String languageCode;

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GenreDTO {
+public class GenreDTO extends BaseDTO{
     private Long id;
     private String name;
 }

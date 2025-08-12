@@ -1,19 +1,18 @@
 package com.ptit_intern.themoviedb.entity;
 
+import com.ptit_intern.themoviedb.dto.dtoClass.CommentDTO;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "comments")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Comment extends BaseEntity{
+public class Comment extends BaseEntity<CommentDTO> {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 

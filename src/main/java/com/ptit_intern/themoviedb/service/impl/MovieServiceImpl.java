@@ -1,11 +1,13 @@
 package com.ptit_intern.themoviedb.service.impl;
 
+import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
 import com.ptit_intern.themoviedb.entity.*;
 import com.ptit_intern.themoviedb.repository.*;
 import com.ptit_intern.themoviedb.service.MovieService;
 import com.ptit_intern.themoviedb.service.cloudinary.CloudinaryService;
 import com.ptit_intern.themoviedb.service.cloudinary.UploadOptions;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.Set;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MovieServiceImpl implements MovieService {
     private final MovieRepository movieRepository;
     private final CloudinaryService cloudinaryService;
@@ -32,14 +35,16 @@ public class MovieServiceImpl implements MovieService {
     private final CompanyRepository companyRepository;
     private final PersonRepository personRepository;
 
-    public Movie createMovie(CreateMovieRequest request) throws IOException {
+    @Transactional
+    public MovieDTO createMovie(CreateMovieRequest request) throws IOException {
         log.info("Creating new movie:{}", request.getTitle());
         Movie movie = new Movie();
         copyBasicPropertiesFromCreateRequest(request, movie);
         handleImageUploadsForCreate(movie, request);
+        setMovieRelationships(movie,request.getGenreIds(),request.getCountryIds(),request.getLanguageIds(),request.getCompanyIds());
         Movie savedMovie = movieRepository.save(movie);
         log.info("Successfully created movie with ID: {}", savedMovie.getId());
-        return  savedMovie;
+        return (MovieDTO) savedMovie.toDTO(MovieDTO.class);
     }
 
     //    helper methods

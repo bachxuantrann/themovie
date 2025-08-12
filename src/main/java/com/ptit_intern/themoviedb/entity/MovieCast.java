@@ -6,7 +6,8 @@ import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "movie_casts", uniqueConstraints = @UniqueConstraint(columnNames = {"movie_id", "person_id", "job"}))
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)

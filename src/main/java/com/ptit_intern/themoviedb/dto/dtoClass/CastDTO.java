@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CastDTO {
+public class CastDTO extends BaseDTO {
     private Long id;
     private Long personId;
     private String name;

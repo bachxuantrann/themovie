@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -21,10 +22,8 @@ public class MovieDTO {
     String title;
     String originalTitle;
     String overview;
-
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate releaseDate;
-
     Integer runtime;
     String posterPath;
     String posterPublicId;
@@ -50,9 +49,10 @@ public class MovieDTO {
     String updatedBy;
 
     // Related data
-    Set<String> genres;
-    Set<String> countries;
-    Set<String> languages;
-    Set<String> companies;
-    Set<Long> personIds;
+    Set<GenreDTO> genres;
+    Set<CountryDTO> countries;
+    Set<LanguageDTO> languages;
+    Set<CompanyDTO> companies;
+    Set<PersonDTO> persons;
+    Set<CommentDTO> comments;
 }

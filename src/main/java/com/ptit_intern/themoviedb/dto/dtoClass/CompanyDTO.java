@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CompanyDTO {
+public class CompanyDTO extends BaseDTO {
     private Long id;
     private String name;
     private String logoPath;
