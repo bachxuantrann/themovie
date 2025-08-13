@@ -19,8 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
     private String avatarDefault = "https://res.cloudinary.com/dpioj21ib/image/upload/v1754814358/default-avatar-icon-of-social-media-user-vector_vqtt1m.jpg";
+
     @Override
     public User handleGetUserByUsername(String username) {
         return this.userRepository.findByUsername(username);
@@ -47,12 +46,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateRefreshToken(String refreshToken, String username) {
         User currentUser = this.userRepository.findByUsername(username);
-        if(currentUser != null) {
+        if (currentUser != null) {
             currentUser.setRefreshToken(refreshToken);
             this.userRepository.save(currentUser);
         }
     }
-    public boolean isUserExist(String username){
+
+    public boolean isUserExist(String username) {
         return this.userRepository.findByUsername(username.trim()) instanceof User ? true : false;
     }
 
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void clearUserToken(String username) {
         User user = this.userRepository.findByUsername(username);
-        if(user != null) {
+        if (user != null) {
             user.setRefreshToken(null);
             this.userRepository.save(user);
         }
@@ -76,39 +76,39 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO updateUser(UploadUserRequest uploadUserRequest) throws IOException {
-        User user = userRepository.findById(uploadUserRequest.getId()).orElseThrow(()-> new IllegalStateException("User Not Found"));
+        User user = userRepository.findById(uploadUserRequest.getId()).orElseThrow(() -> new IllegalStateException("User Not Found"));
         MultipartFile avatar = uploadUserRequest.getAvatar();
         Boolean removeAvatar = uploadUserRequest.getRemoveAvatar();
         String fullName = uploadUserRequest.getFullName() == null ? "" : uploadUserRequest.getFullName().trim();
         String email = uploadUserRequest.getEmail() == null ? "" : uploadUserRequest.getEmail().trim();
         String description = uploadUserRequest.getDescription() == null ? "" : uploadUserRequest.getDescription().trim();
-        if ( fullName != "") user.setFullName(fullName);
-        if ( email != "") user.setEmail(email);
-        if ( description != "") user.setDescription(description);
+        if (fullName != "") user.setFullName(fullName);
+        if (email != "") user.setEmail(email);
+        if (description != "") user.setDescription(description);
         boolean hasNewAvatar = avatar != null && !avatar.isEmpty();
         boolean wantRemoveAvatar = Boolean.TRUE.equals(removeAvatar);
         if (hasNewAvatar) {
             UploadOptions options = new UploadOptions();
             options.setFolder("users");
-            options.setTags(List.of("user","avatar"));
+            options.setTags(List.of("user", "avatar"));
             var uploadRes = cloudinaryService.uploadFileWithPublicId(avatar, options);
             String newUrl = uploadRes.secureUrl();
             String newPublicId = uploadRes.publicId();
             String oldUrl = user.getAvatarUrl();
             String oldPublicId = user.getAvatarPublicId();
-            if(newUrl != null && !newUrl.isEmpty()){
+            if (newUrl != null && !newUrl.isEmpty()) {
                 user.setAvatarUrl(newUrl);
             }
-            if (newPublicId != null && !newPublicId.isEmpty()){
+            if (newPublicId != null && !newPublicId.isEmpty()) {
                 user.setAvatarPublicId(newPublicId);
             }
-            try{
-                if (oldPublicId != null && !oldPublicId.isBlank()){
+            try {
+                if (oldPublicId != null && !oldPublicId.isBlank()) {
                     cloudinaryService.deleteImageByPublicId(oldPublicId);
-                } else if (oldUrl!=null && !oldUrl.isBlank()){
+                } else if (oldUrl != null && !oldUrl.isBlank()) {
                     cloudinaryService.deleteImageByUrl(oldUrl);
                 }
-            } catch (Exception ex){
+            } catch (Exception ex) {
                 log.warn("Xóa ảnh cũ trên Cloudinary thất bại (không rollback): userId={}, oldPublicId={}, oldUrl={}, error={}",
                         user.getId(), oldPublicId, oldUrl, ex.getMessage());
             }
@@ -137,24 +137,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getDetailUser(Long id) {
         return this.userRepository.findById(id).orElseThrow(
-                ()-> new UsernameNotFoundException("user not found")
+                () -> new UsernameNotFoundException("user not found")
         ).toDTO(UserDTO.class);
     }
 
     @Override
     public void deleteUser(Long id) {
         User user = this.userRepository.findById(id).orElseThrow(
-                ()-> new UsernameNotFoundException("user not found")
+                () -> new UsernameNotFoundException("user not found")
         );
         String avatarUrl = user.getAvatarUrl();
         String publicId = user.getAvatarPublicId();
         try {
-            if (publicId != null && !publicId.isBlank()){
+            if (publicId != null && !publicId.isBlank()) {
                 cloudinaryService.deleteImageByPublicId(publicId);
-            } else if (avatarUrl!=null && !avatarUrl.isBlank()){
+            } else if (avatarUrl != null && !avatarUrl.isBlank()) {
                 cloudinaryService.deleteImageByUrl(avatarUrl);
             }
-        } catch (Exception ex){
+        } catch (Exception ex) {
             log.warn("Xóa ảnh  trên Cloudinary thất bại (không rollback): userId={}, oldPublicId={}, oldUrl={}, error={}",
                     user.getId(), publicId, avatarUrl, ex.getMessage());
         }
@@ -170,13 +170,13 @@ public class UserServiceImpl implements UserService {
         newUser.setUsername(user.getUsername().trim());
         newUser.setPassword(user.getPassword().trim());
         newUser.setRole(user.getRole());
-        if(user.getEmail()!=null && !user.getEmail().isEmpty()){
+        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
             newUser.setEmail(user.getEmail().trim());
         }
-        if (user.getFullName()!=null && !user.getFullName().isEmpty()){
+        if (user.getFullName() != null && !user.getFullName().isEmpty()) {
             newUser.setFullName(user.getFullName().trim());
         }
-        if (user.getDescription()!=null && !user.getDescription().isEmpty()){
+        if (user.getDescription() != null && !user.getDescription().isEmpty()) {
             newUser.setDescription(user.getDescription().trim());
         }
         newUser.setAvatarUrl(avatarDefault);
@@ -187,7 +187,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changePasswordByUser(ChangePasswordRequest changePasswordRequest) throws InvalidExceptions {
         User user = this.userRepository.findById(changePasswordRequest.getId()).orElseThrow(
-                ()-> new UsernameNotFoundException("user not found")
+                () -> new UsernameNotFoundException("user not found")
         );
         if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), user.getPassword().trim())) {
             throw new InvalidExceptions("Old password does not match");
@@ -200,8 +200,8 @@ public class UserServiceImpl implements UserService {
     public ResultPagination searchAndPagination(int page, int size, String keyword, boolean desc) {
         Sort sort = Sort.by("created_at");
         if (desc) sort = sort.descending();
-        Pageable pageable = PageRequest.of(page-1, size, sort);
-        Page<User> users =this.userRepository.searchUsers(keyword, pageable);
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<User> users = this.userRepository.searchUsers(keyword, pageable);
         List<UserDTO> userDTOS = new ArrayList<>();
         userDTOS = users.getContent().stream().map(user -> user.toDTO(UserDTO.class)).collect(Collectors.toList());
         ResultPagination resultPagination = new ResultPagination();
@@ -218,9 +218,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changePasswordByAdmin(Long id, String password) throws InvalidExceptions {
         User user = this.userRepository.findById(id).orElseThrow(
-                ()-> new UsernameNotFoundException("user not found")
+                () -> new UsernameNotFoundException("user not found")
         );
-        if (password != null && !password.trim().isEmpty()){
+        if (password != null && !password.trim().isEmpty()) {
             user.setPassword(passwordEncoder.encode(password.trim()));
         }
         this.userRepository.save(user);

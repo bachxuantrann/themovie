@@ -1,18 +1,17 @@
 package com.ptit_intern.themoviedb.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "movie_casts", uniqueConstraints = @UniqueConstraint(columnNames = {"movie_id", "person_id", "job"}))
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class MovieCast extends BaseEntity {
     @Column(name = "job", length = 100, nullable = false)
     String job;

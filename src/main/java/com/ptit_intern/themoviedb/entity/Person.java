@@ -1,12 +1,10 @@
 package com.ptit_intern.themoviedb.entity;
 
+import com.ptit_intern.themoviedb.dto.dtoClass.PersonDTO;
 import com.ptit_intern.themoviedb.util.enums.GenderEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
@@ -15,16 +13,20 @@ import java.util.Set;
 
 @Entity
 @Table(name = "persons")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Person extends BaseEntity {
+@Builder
+public class Person extends BaseEntity<PersonDTO> {
     @NotBlank(message = "name of person is required")
     @Column(name = "name", nullable = false)
     String name;
     @Column(name = "profile_path",columnDefinition = "TEXT")
     String profilePath;
+    @Column(name = "profile_public_id",columnDefinition = "TEXT")
+    String profilePublicId;
     @Column(columnDefinition = "TEXT")
     String biography;
     @Column(name = "birth_date")
