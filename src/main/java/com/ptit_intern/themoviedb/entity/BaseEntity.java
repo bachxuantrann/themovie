@@ -71,6 +71,7 @@ public class BaseEntity<DTO> implements Serializable {
                         dtoField.set(dto, value);
                         break;
                     }
+                    mapAuditFields(this,dto);
                 }
             }
             return dto;

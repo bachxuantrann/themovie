@@ -264,7 +264,7 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
         return relationshipRepositoryFactory.getMovieCompanyRepository()
                 .findCompaniesByMovieId(movieId, pageable)
                 .stream()
-                .map(company -> new CompanyDTO(company.getId(), company.getName(), company.getLogoPath()))
+                .map(company -> new CompanyDTO(company.getId(), company.getName(), company.getLogoPath(),company.getLogoPublicId()))
                 .collect(Collectors.toList());
     }
 
