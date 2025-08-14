@@ -264,7 +264,7 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
         return relationshipRepositoryFactory.getMovieCompanyRepository()
                 .findCompaniesByMovieId(movieId, pageable)
                 .stream()
-                .map(company -> new CompanyDTO(company.getId(), company.getName(), company.getLogoPath()))
+                .map(company -> new CompanyDTO(company.getId(), company.getName(), company.getLogoPath(),company.getLogoPublicId()))
                 .collect(Collectors.toList());
     }
 
@@ -277,6 +277,7 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
                         .id(cast.getId())
                         .personId(cast.getPerson().getId())
                         .name(cast.getPerson().getName())
+                        .career(cast.getPerson().getCarrer())
                         .profilePath(cast.getPerson().getProfilePath())
                         .characterName(cast.getCharacterName())
                         .orderIndex(cast.getOrderIndex())
@@ -293,6 +294,7 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
                         .id(crew.getId())
                         .personId(crew.getPerson().getId())
                         .name(crew.getPerson().getName())
+                        .career(crew.getPerson().getCarrer())
                         .profilePath(crew.getPerson().getProfilePath())
                         .job(crew.getJob())
                         .build())
@@ -307,7 +309,7 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
 
         List<Long> newGenreIds = genreIds.stream()
                 .filter(id -> !existingGenreIds.contains(id))
-                .collect(Collectors.toList());
+                .toList();
 
         if (newGenreIds.isEmpty()) {
             return;
@@ -336,7 +338,7 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
 
         List<Long> newCountryIds = countryIds.stream()
                 .filter(id -> !existingCountryIds.contains(id))
-                .collect(Collectors.toList());
+                .toList();
 
         if (newCountryIds.isEmpty()) {
             return;
@@ -365,7 +367,7 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
 
         List<Long> newLanguageIds = languageIds.stream()
                 .filter(id -> !existingLanguageIds.contains(id))
-                .collect(Collectors.toList());
+                .toList();
 
         if (newLanguageIds.isEmpty()) {
             return;
@@ -394,7 +396,7 @@ public class MovieRelationshipServiceImpl implements MovieRelationshipService {
 
         List<Long> newCompanyIds = companyIds.stream()
                 .filter(id -> !existingCompanyIds.contains(id))
-                .collect(Collectors.toList());
+                .toList();
 
         if (newCompanyIds.isEmpty()) {
             return;

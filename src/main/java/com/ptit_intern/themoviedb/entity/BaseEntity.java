@@ -71,6 +71,7 @@ public class BaseEntity<DTO> implements Serializable {
                         dtoField.set(dto, value);
                         break;
                     }
+                    mapAuditFields(this,dto);
                 }
             }
             return dto;
@@ -199,6 +200,7 @@ public class BaseEntity<DTO> implements Serializable {
                             .map(person -> {
                                 PersonDTO personDTO = new PersonDTO();
                                 personDTO.setName(person.getName());
+                                personDTO.setCarrer(person.getCarrer());
                                 personDTO.setProfilePath(person.getProfilePath());
                                 personDTO.setProfilePublicId(person.getProfilePublicId());
                                 personDTO.setBiography(person.getBiography());

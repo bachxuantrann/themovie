@@ -13,4 +13,5 @@ public class CompanyDTO extends BaseDTO {
     private Long id;
     private String name;
     private String logoPath;
+    private String logoPublicId;
 }

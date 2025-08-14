@@ -13,6 +13,7 @@ public class CrewDTO extends BaseDTO{
     private Long id;
     private Long personId;
     private String name;
+    private String career;
     private String profilePath;
     private String job;
 }

@@ -13,6 +13,7 @@ import java.time.LocalDate;
 public class PersonDTO extends BaseDTO {
     Long id;
     String name;
+    String carrer;
     String profilePath;
     String profilePublicId;
     String biography;
