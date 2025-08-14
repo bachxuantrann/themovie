@@ -23,6 +23,8 @@ public class Person extends BaseEntity<PersonDTO> {
     @NotBlank(message = "name of person is required")
     @Column(name = "name", nullable = false)
     String name;
+    @Column(name="carrer",nullable = false)
+    String carrer;
     @Column(name = "profile_path",columnDefinition = "TEXT")
     String profilePath;
     @Column(name = "profile_public_id",columnDefinition = "TEXT")

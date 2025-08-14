@@ -13,6 +13,7 @@ public class CastDTO extends BaseDTO {
     private Long id;
     private Long personId;
     private String name;
+    private String career;
     private String profilePath;
     private String characterName;
     private Integer orderIndex;
