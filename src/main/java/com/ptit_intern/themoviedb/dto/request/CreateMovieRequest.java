@@ -57,4 +57,5 @@ public class CreateMovieRequest {
     Set<Long> languageIds;
     Set<Long> companyIds;
     Set<Long> personIds;
+    Set<Long> commentIds;
 }

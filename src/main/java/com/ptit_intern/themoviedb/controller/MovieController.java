@@ -44,7 +44,7 @@ public class MovieController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updateMovie(
             @Valid @ModelAttribute UpdateMovieRequest request
-    ) throws InvalidExceptions {
+    ) throws InvalidExceptions, IOException {
         movieService.updateMovie(request);
         return ResponseEntity.ok().build();
     }

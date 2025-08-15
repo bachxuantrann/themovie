@@ -20,9 +20,10 @@ import java.util.Set;
 public class UpdateMovieRequest {
     @NotNull(message = "Movie Id is required for update")
     Long id;
-    @Size(max = 255,message = "Title must not exceed 255 characters")
+    @Size(max = 255, message = "Title must not exceed 255 characters")
+    @NotBlank(message = "title of film is required")
     String title;
-    @Size(max = 255,message = "Original title must not exceed 255 characters")
+    @Size(max = 255, message = "Original title must not exceed 255 characters")
     String originalTitle;
     String overview;
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -71,4 +72,5 @@ public class UpdateMovieRequest {
     Set<Long> languageIds;
     Set<Long> companyIds;
     Set<Long> personIds;
+    Set<Long> commentIds;
 }
