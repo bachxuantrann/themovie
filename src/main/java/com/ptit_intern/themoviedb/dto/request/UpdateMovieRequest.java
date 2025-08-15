@@ -24,6 +24,7 @@ public class UpdateMovieRequest {
     String title;
     @Size(max = 255,message = "Original title must not exceed 255 characters")
     String originalTitle;
+    String overview;
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate releaseDate;
 
@@ -39,7 +40,7 @@ public class UpdateMovieRequest {
     @Min(value = 0, message = "Vote count must be non-negative")
     Integer voteCount;
 
-    @Pattern(regexp = "^(https?://).*", message = "Trailer URL must be a valid HTTP/HTTPS URL")
+    @Size(max = 255, message = "trailer url must not exceed 255 characters", min = 1)
     String trailerUrl;
 
     @Min(value = 0, message = "Budget must be non-negative")
@@ -51,7 +52,7 @@ public class UpdateMovieRequest {
     @Size(max = 500, message = "Tagline must not exceed 500 characters")
     String tagline;
 
-    @Pattern(regexp = "^(https?://).*", message = "Homepage URL must be a valid HTTP/HTTPS URL")
+    @Size(max = 255, message = "homepage url must not exceed 255 characters", min = 1)
     String homepageUrl;
 
     @Pattern(regexp = "^(Released|In Production|Post Production|Planned|Canceled)$",

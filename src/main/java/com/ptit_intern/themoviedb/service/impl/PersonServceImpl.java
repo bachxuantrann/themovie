@@ -3,6 +3,7 @@ package com.ptit_intern.themoviedb.service.impl;
 import com.ptit_intern.themoviedb.dto.dtoClass.PersonDTO;
 import com.ptit_intern.themoviedb.dto.request.CreatePersonRequest;
 import com.ptit_intern.themoviedb.dto.request.UpdatePersonRequest;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.Person;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.repository.PersonRepository;
@@ -12,11 +13,16 @@ import com.ptit_intern.themoviedb.service.cloudinary.UploadOptions;
 import com.ptit_intern.themoviedb.util.enums.GenderEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -107,6 +113,24 @@ public class PersonServceImpl implements PersonService {
             person.setProfilePublicId(cloudinaryService.extractPublicIdFromUrl(profileDefault));
         }
         personRepository.save(person);
+    }
+
+    @Override
+    public ResultPagination searchPersons(int page, int size, String keyword, String career, boolean desc) {
+        Sort sort = Sort.by("created_at");
+        if (desc) sort = sort.descending();
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Person> persons = personRepository.searchPersons(keyword,career,pageable);
+        List<PersonDTO> personDTOS = persons.stream().map(person -> person.toDTO(PersonDTO.class)).toList();
+        ResultPagination resultPagination = new ResultPagination();
+        resultPagination.setResults(personDTOS);
+        ResultPagination.MetaInfo metaInfo = new ResultPagination.MetaInfo();
+        metaInfo.setTotalPages(persons.getTotalPages());
+        metaInfo.setPage(page);
+        metaInfo.setSize(size);
+        metaInfo.setTotal(persons.getTotalElements());
+        resultPagination.setMetaInfo(metaInfo);
+        return  resultPagination;
     }
 
     private void transferDataField(Person person, String name, String career, String biography, LocalDate birthDate, String placeOfBirth, LocalDate deathDate, String gender) {

@@ -4,6 +4,7 @@ package com.ptit_intern.themoviedb.controller;
 import com.ptit_intern.themoviedb.dto.dtoClass.PersonDTO;
 import com.ptit_intern.themoviedb.dto.request.CreatePersonRequest;
 import com.ptit_intern.themoviedb.dto.request.UpdatePersonRequest;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.service.PersonService;
 import com.ptit_intern.themoviedb.util.annotation.ApiMessage;
@@ -47,5 +48,16 @@ public class PersonController {
     public ResponseEntity<Void> updatePerson(@Valid @ModelAttribute UpdatePersonRequest request) throws InvalidExceptions,IOException {
         personService.updatePerson(request);
         return ResponseEntity.ok().build();
+    }
+    @GetMapping("/search")
+    @ApiMessage("get and search persons")
+    public ResponseEntity<ResultPagination> searchPersons (
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String career,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "true") boolean desc
+    ){
+        return ResponseEntity.ok(personService.searchPersons(page,size,keyword,career,desc));
     }
 }

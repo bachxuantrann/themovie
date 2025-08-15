@@ -2,6 +2,7 @@ package com.ptit_intern.themoviedb.service.impl;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
+import com.ptit_intern.themoviedb.dto.request.UpdateMovieRequest;
 import com.ptit_intern.themoviedb.entity.*;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.repository.*;
@@ -51,6 +52,11 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public MovieDTO getMovie(Long id) throws InvalidExceptions {
         return movieRepository.findById(id).orElseThrow(() -> new InvalidExceptions("Movie is not found")).toDTO(MovieDTO.class);
+
+    }
+
+    @Override
+    public void updateMovie(UpdateMovieRequest request) throws InvalidExceptions {
 
     }
 
