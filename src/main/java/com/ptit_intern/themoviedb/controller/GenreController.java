@@ -48,7 +48,7 @@ public class GenreController {
     }
     @GetMapping()
     @ApiMessage("get and search genres")
-    public ResponseEntity<ResultPagination> searchGenre(
+    public ResponseEntity<ResultPagination> searchGenres(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false,defaultValue = "") String keyword,

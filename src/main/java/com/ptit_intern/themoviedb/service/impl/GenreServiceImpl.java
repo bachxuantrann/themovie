@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +52,7 @@ public class GenreServiceImpl implements GenreService {
         if (isExists(genreDTO.getName())) {
             throw new InvalidExceptions("Name of genre is existed");
         }
-        Genre updateGenre = genreRepository.findById(genreDTO.getId()).orElseThrow(()-> new InvalidExceptions("Genre not found"));
+        Genre updateGenre = genreRepository.findById(genreDTO.getId()).orElseThrow(() -> new InvalidExceptions("Genre not found"));
         updateGenre.setName(genreDTO.getName());
         return genreRepository.save(updateGenre).toDTO(GenreDTO.class);
 

@@ -1,6 +1,7 @@
 package com.ptit_intern.themoviedb.controller;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.LanguageDTO;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.Language;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.service.LanguageService;
@@ -35,5 +36,22 @@ public class LanguageController {
     public ResponseEntity<Void> deleteLanguage(@PathVariable Long id) throws InvalidExceptions {
         languageService.deleteLanguage(id);
         return ResponseEntity.ok().build();
+    }
+    @PutMapping()
+    @ApiMessage("update language")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> updateLanguage(@RequestBody @Valid LanguageDTO languageDTO) throws InvalidExceptions {
+        languageService.updateLanguage(languageDTO);
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping()
+    @ApiMessage("get and search language")
+    public ResponseEntity<ResultPagination> searchLanguages(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false,defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "true") boolean desc
+    ){
+        return ResponseEntity.ok(languageService.searchLanguages(page,size,keyword,desc));
     }
 }
