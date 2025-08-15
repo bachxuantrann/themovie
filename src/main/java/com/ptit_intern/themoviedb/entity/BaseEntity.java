@@ -200,7 +200,7 @@ public class BaseEntity<DTO> implements Serializable {
                             .map(person -> {
                                 PersonDTO personDTO = new PersonDTO();
                                 personDTO.setName(person.getName());
-                                personDTO.setCarrer(person.getCarrer());
+                                personDTO.setCareer(person.getCareer());
                                 personDTO.setProfilePath(person.getProfilePath());
                                 personDTO.setProfilePublicId(person.getProfilePublicId());
                                 personDTO.setBiography(person.getBiography());

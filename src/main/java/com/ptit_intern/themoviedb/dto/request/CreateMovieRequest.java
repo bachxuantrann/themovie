@@ -24,7 +24,6 @@ public class CreateMovieRequest {
     @Size(max = 255, message = "Original title must not exceed 255 characters")
     String originalTitle;
     String overview;
-    @JsonFormat(pattern = "dd-MM-yyyy")
     LocalDate releaseDate;
     @Min(value = 1, message = "Runtime must be positive")
     @Max(value = 1000, message = "Runtime must not exceed at 1000 minutes")

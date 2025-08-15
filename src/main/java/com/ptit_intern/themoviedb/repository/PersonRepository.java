@@ -11,4 +11,6 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     Person getReferenceById(@NotNull(message = "Person ID is required") @Min(value = 1, message = "Person ID must be positive") Long personId);
 
     boolean existsById(Long personId);
+
+    boolean existsByName(String name);
 }
