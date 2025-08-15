@@ -8,22 +8,34 @@ import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.User;
 import com.ptit_intern.themoviedb.exception.IdInvalidExceptions;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
 public interface UserService {
     User handleGetUserByUsername(String username);
+
     void updateRefreshToken(String refreshToken, String username);
+
     boolean isUserExist(String username);
+
     User registerUser(RegisterRequest registerRequest);
+
     void clearUserToken(String username);
+
     UserDTO updateUser(UploadUserRequest uploadUserRequest) throws IOException;
+
     String getUsernameById(Long id) throws IdInvalidExceptions;
+
     UserDTO getDetailUser(Long id);
+
     void deleteUser(Long id);
+
     UserDTO createUser(User user) throws InvalidExceptions;
+
     void changePasswordByUser(ChangePasswordRequest changePasswordRequest) throws InvalidExceptions;
-    ResultPagination searchAndPagination(int page,int size, String keyword, boolean desc);
+
+    ResultPagination searchAndPagination(int page, int size, String keyword, boolean desc);
+
     void changePasswordByAdmin(Long id, String password) throws InvalidExceptions;
+
 }
