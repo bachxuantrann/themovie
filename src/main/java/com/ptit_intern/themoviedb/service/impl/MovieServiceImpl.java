@@ -3,6 +3,7 @@ package com.ptit_intern.themoviedb.service.impl;
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
 import com.ptit_intern.themoviedb.entity.*;
+import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.repository.*;
 import com.ptit_intern.themoviedb.service.MovieService;
 import com.ptit_intern.themoviedb.service.cloudinary.CloudinaryService;
@@ -41,10 +42,16 @@ public class MovieServiceImpl implements MovieService {
         Movie movie = new Movie();
         copyBasicPropertiesFromCreateRequest(request, movie);
         handleImageUploadsForCreate(movie, request);
-        setMovieRelationships(movie,request.getGenreIds(),request.getCountryIds(),request.getLanguageIds(),request.getCompanyIds());
+        setMovieRelationships(movie, request.getGenreIds(), request.getCountryIds(), request.getLanguageIds(), request.getCompanyIds());
         Movie savedMovie = movieRepository.save(movie);
         log.info("Successfully created movie with ID: {}", savedMovie.getId());
         return (MovieDTO) savedMovie.toDTO(MovieDTO.class);
+    }
+
+    @Override
+    public MovieDTO getMovie(Long id) throws InvalidExceptions {
+        return movieRepository.findById(id).orElseThrow(() -> new InvalidExceptions("Movie is not found")).toDTO(MovieDTO.class);
+
     }
 
     //    helper methods
@@ -63,11 +70,12 @@ public class MovieServiceImpl implements MovieService {
         movie.setHomepageUrl(request.getHomepageUrl());
         movie.setStatus(request.getStatus());
     }
-    private void handleImageUploadsForCreate(Movie movie,CreateMovieRequest request) throws IOException {
+
+    private void handleImageUploadsForCreate(Movie movie, CreateMovieRequest request) throws IOException {
         if (request.getPoster() != null && !request.getPoster().isEmpty()) {
             UploadOptions posterOptions = new UploadOptions();
             posterOptions.setFolder("movies/posters");
-            posterOptions.setTags(List.of("movie","poster"));
+            posterOptions.setTags(List.of("movie", "poster"));
             var posterUploadRes = cloudinaryService.uploadFileWithPublicId(request.getPoster(), posterOptions);
             movie.setPosterPath(posterUploadRes.secureUrl());
             movie.setPosterPublicId(posterUploadRes.publicId());
@@ -77,12 +85,13 @@ public class MovieServiceImpl implements MovieService {
         if (request.getBackdrop() != null && !request.getBackdrop().isEmpty()) {
             UploadOptions backdropOptions = new UploadOptions();
             backdropOptions.setFolder("movies/backdrops");
-            backdropOptions.setTags(List.of("movie","backdrop"));
+            backdropOptions.setTags(List.of("movie", "backdrop"));
             var backdropUploadRes = cloudinaryService.uploadFileWithPublicId(request.getBackdrop(), backdropOptions);
             movie.setBackdropPath(backdropUploadRes.secureUrl());
             movie.setBackdropPublicId(backdropUploadRes.publicId());
         }
     }
+
     private void setMovieRelationships(Movie movie, Set<Long> genreIds, Set<Long> countryIds,
                                        Set<Long> languageIds, Set<Long> companyIds) {
         // Set genres

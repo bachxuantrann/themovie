@@ -3,6 +3,7 @@ package com.ptit_intern.themoviedb.controller;
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
 import com.ptit_intern.themoviedb.entity.Movie;
+import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.service.MovieService;
 import com.ptit_intern.themoviedb.util.annotation.ApiMessage;
 import jakarta.validation.Valid;
@@ -11,10 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -32,5 +30,11 @@ public class MovieController {
             ) throws IOException {
         log.info("Create new movie {}",request.getTitle());
         return ResponseEntity.ok().body(movieService.createMovie(request));
+    }
+
+    @GetMapping("/{id}")
+    @ApiMessage("get info detail movie")
+    public ResponseEntity<MovieDTO> getMovie(@PathVariable Long id) throws InvalidExceptions {
+        return ResponseEntity.ok(movieService.getMovie(id));
     }
 }
