@@ -35,4 +35,8 @@ public interface MovieCastRepository extends JpaRepository<MovieCast, Long> {
     void deleteByMovieIdAndJobNot(@Param("movieId") Long movieId, @Param("job") String job);
 
     boolean existsByMovieIdAndPersonIdAndJob(Long movieId, Long personId, String job);
+
+    @Modifying
+    @Query("DELETE FROM MovieCast mca WHERE mca.movie.id = :movieId")
+    void deleteByMovieId(@Param("movieId") Long movieId);
 }

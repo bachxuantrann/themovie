@@ -30,4 +30,5 @@ public interface MovieGenreRepository extends JpaRepository<MovieGenre, Long> {
     Long countByMovieId(@Param("movieId") Long movieId);
 
     boolean existsByMovieIdAndGenreId(Long movieId, Long genreId);
+
 }

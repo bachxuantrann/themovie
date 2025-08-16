@@ -13,16 +13,16 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class MovieCast extends BaseEntity {
-    @Column(name = "job", length = 100, nullable = false)
+    @Column(name = "job", length = 100)
     String job;
     @Column(name = "character_name")
     String characterName;
     @Column(name = "order_index")
     Integer orderIndex;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "movie_id", insertable = false, updatable = false)
+    @JoinColumn(name = "movie_id")
     private Movie movie;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "person_id", insertable = false, updatable = false)
+    @JoinColumn(name = "person_id")
     private Person person;
 }

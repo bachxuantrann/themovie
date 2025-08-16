@@ -42,11 +42,11 @@ public class MovieController {
     @PutMapping()
     @ApiMessage("update movie")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> updateMovie(
+    public ResponseEntity<MovieDTO> updateMovie(
             @Valid @ModelAttribute UpdateMovieRequest request
     ) throws InvalidExceptions, IOException {
-        movieService.updateMovie(request);
-        return ResponseEntity.ok().build();
+
+        return ResponseEntity.ok().body(movieService.updateMovie(request));
     }
 //    merge code
 }
