@@ -48,5 +48,12 @@ public class MovieController {
 
         return ResponseEntity.ok().body(movieService.updateMovie(request));
     }
-//    merge code
+    @DeleteMapping("/{id}")
+    @ApiMessage("delete movie")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteMovie(@PathVariable Long id) throws InvalidExceptions {
+        movieService.deleteMovie(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

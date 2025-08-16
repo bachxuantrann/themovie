@@ -39,6 +39,9 @@ public class MovieServiceImpl implements MovieService {
     private final CompanyRepository companyRepository;
     private final PersonRepository personRepository;
     private final CommentRepository commentRepository;
+    private final ListItemRepository listItemRepository;
+    private final RatingRepository ratingRepository;
+    private final UserFavoriteMovieRepository userFavoriteMovieRepository;
 
     @Transactional
     public MovieDTO createMovie(CreateMovieRequest request) throws IOException {
@@ -92,6 +95,43 @@ public class MovieServiceImpl implements MovieService {
         Movie updatedMovie = movieRepository.save(movieUpdate);
         log.info("Successfully updated movie with ID: {}", updatedMovie.getId());
         return updatedMovie.toDTO(MovieDTO.class);
+    }
+
+    @Override
+    public void deleteMovie(Long id) throws InvalidExceptions {
+        log.info("deleting movie:{}", id);
+        Movie movie = movieRepository.findById(id).orElseThrow(
+                () -> new InvalidExceptions("Movie is not existed")
+        );
+        try {
+            deleteMovieImages(movie);
+            deleteMovieRelationships(movie);
+            movieRepository.deleteById(movie.getId());
+            movieRepository.flush();
+            log.info("Successfully deleted movie with ID: {} and title: {}", id, movie.getTitle());
+        } catch (Exception e){
+            log.error("Failed to delete movie with ID: {}, error: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete movie: " + e.getMessage(), e);
+        }
+
+    }
+    private void deleteMovieImages(Movie movie) {
+        // Delete poster image
+        if (movie.getPosterPublicId() != null || movie.getPosterPath() != null) {
+            deleteOldImage(movie.getPosterPublicId(), movie.getPosterPath(), "poster");
+        }
+
+        // Delete backdrop image
+        if (movie.getBackdropPublicId() != null || movie.getBackdropPath() != null) {
+            deleteOldImage(movie.getBackdropPublicId(), movie.getBackdropPath(), "backdrop");
+        }
+    }
+    private void deleteMovieRelationships(Movie movie) {
+        clearExistingRelationships(movie);
+        ratingRepository.deleteByMovieId(movie.getId());
+        commentRepository.deleteByMovieId(movie.getId());
+        userFavoriteMovieRepository.deleteByMovieId(movie.getId());
+        listItemRepository.deleteByMovieId(movie.getId());
     }
 
     //    helper methods

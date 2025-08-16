@@ -7,10 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
-
+@Repository
 public interface MovieCompanyRepository extends JpaRepository<MovieCompany, Long> {
     @Query("SELECT mc.company FROM MovieCompany mc WHERE mc.movie.id = :movieId ORDER BY mc.company.name")
     List<Company> findCompaniesByMovieId(@Param("movieId") Long movieId, Pageable pageable);
