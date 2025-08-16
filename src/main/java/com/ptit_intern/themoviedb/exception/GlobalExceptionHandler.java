@@ -8,6 +8,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -26,7 +27,8 @@ public class GlobalExceptionHandler {
             BadCredentialsException.class,
             UserExisted.class,
             InvalidExceptions.class,
-            AccessDeniedException.class
+            AccessDeniedException.class,
+            HttpMediaTypeNotSupportedException.class
     })
     public ResponseEntity<RestResponse<Object>> handleInvalidExceptions(Exception ex) {
         RestResponse<Object> res = new RestResponse<Object>();

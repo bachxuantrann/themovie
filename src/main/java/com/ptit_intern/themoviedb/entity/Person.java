@@ -37,6 +37,7 @@ public class Person extends BaseEntity<PersonDTO> {
     String placeOfBirth;
     @Column(name = "death_date")
     LocalDate deathDate;
+    @Enumerated(EnumType.STRING)
     GenderEnum gender;
 
     //    Relationships

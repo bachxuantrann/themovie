@@ -20,10 +20,12 @@ import java.util.Set;
 public class UpdateMovieRequest {
     @NotNull(message = "Movie Id is required for update")
     Long id;
-    @Size(max = 255,message = "Title must not exceed 255 characters")
+    @Size(max = 255, message = "Title must not exceed 255 characters")
+    @NotBlank(message = "title of film is required")
     String title;
-    @Size(max = 255,message = "Original title must not exceed 255 characters")
+    @Size(max = 255, message = "Original title must not exceed 255 characters")
     String originalTitle;
+    String overview;
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate releaseDate;
 
@@ -39,7 +41,7 @@ public class UpdateMovieRequest {
     @Min(value = 0, message = "Vote count must be non-negative")
     Integer voteCount;
 
-    @Pattern(regexp = "^(https?://).*", message = "Trailer URL must be a valid HTTP/HTTPS URL")
+    @Size(max = 255, message = "trailer url must not exceed 255 characters", min = 1)
     String trailerUrl;
 
     @Min(value = 0, message = "Budget must be non-negative")
@@ -51,7 +53,7 @@ public class UpdateMovieRequest {
     @Size(max = 500, message = "Tagline must not exceed 500 characters")
     String tagline;
 
-    @Pattern(regexp = "^(https?://).*", message = "Homepage URL must be a valid HTTP/HTTPS URL")
+    @Size(max = 255, message = "homepage url must not exceed 255 characters", min = 1)
     String homepageUrl;
 
     @Pattern(regexp = "^(Released|In Production|Post Production|Planned|Canceled)$",
@@ -70,4 +72,5 @@ public class UpdateMovieRequest {
     Set<Long> languageIds;
     Set<Long> companyIds;
     Set<Long> personIds;
+    Set<Long> commentIds;
 }

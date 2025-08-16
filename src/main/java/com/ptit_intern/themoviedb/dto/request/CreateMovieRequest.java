@@ -1,6 +1,5 @@
 package com.ptit_intern.themoviedb.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -34,7 +33,7 @@ public class CreateMovieRequest {
     BigDecimal voteAverage;
     @Min(value = 0, message = "Vote count must be non-negative")
     Integer voteCount;
-    @Size(max = 255, message = "trailer url must not exceed 255 characters",min = 1)
+    @Size(max = 255, message = "trailer url must not exceed 255 characters", min = 1)
     String trailerUrl;
     @Min(value = 0, message = "Budget must be non-negative")
     Long budget;
@@ -42,7 +41,7 @@ public class CreateMovieRequest {
     Long revenue;
     @Size(max = 500, message = "Tagline must not exceed 500 characters")
     String tagline;
-    @Size(max = 255, message = "homepage url must not exceed 255 characters",min = 1)
+    @Size(max = 255, message = "homepage url must not exceed 255 characters", min = 1)
     String homepageUrl;
     @Pattern(regexp = "^(Released|In Production|Post Production|Planned|Canceled)$",
             message = "Status must be one of: Released, In Production, Post Production, Planned, Canceled")
@@ -58,4 +57,5 @@ public class CreateMovieRequest {
     Set<Long> languageIds;
     Set<Long> companyIds;
     Set<Long> personIds;
+    Set<Long> commentIds;
 }

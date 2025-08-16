@@ -2,6 +2,8 @@ package com.ptit_intern.themoviedb.controller;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.CompanyDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateCompanyRequest;
+import com.ptit_intern.themoviedb.dto.request.UpdateCompanyRequest;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.service.CompanyService;
 import com.ptit_intern.themoviedb.util.annotation.ApiMessage;
@@ -38,5 +40,20 @@ public class CompanyController {
         companyService.deleteCompany(id);
         return ResponseEntity.ok().build();
     }
-
+    @GetMapping()
+    @ApiMessage("get and search company")
+    public ResponseEntity<ResultPagination> searchCompanies(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false,defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "true") boolean desc
+    ){
+        return ResponseEntity.ok(companyService.searchCompanies(page,size,keyword,desc));
+    }
+    @PutMapping()
+    @ApiMessage("update info company")
+    public ResponseEntity<Void> updateCompany(@Valid @ModelAttribute UpdateCompanyRequest request) throws InvalidExceptions, IOException {
+        companyService.updateCompany(request);
+        return ResponseEntity.ok().build();
+    }
 }

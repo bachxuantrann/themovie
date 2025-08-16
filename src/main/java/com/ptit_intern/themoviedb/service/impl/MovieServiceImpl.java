@@ -2,7 +2,9 @@ package com.ptit_intern.themoviedb.service.impl;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
+import com.ptit_intern.themoviedb.dto.request.UpdateMovieRequest;
 import com.ptit_intern.themoviedb.entity.*;
+import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.repository.*;
 import com.ptit_intern.themoviedb.service.MovieService;
 import com.ptit_intern.themoviedb.service.cloudinary.CloudinaryService;
@@ -11,6 +13,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -34,6 +38,7 @@ public class MovieServiceImpl implements MovieService {
     private final LanguageRepository languageRepository;
     private final CompanyRepository companyRepository;
     private final PersonRepository personRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public MovieDTO createMovie(CreateMovieRequest request) throws IOException {
@@ -41,10 +46,43 @@ public class MovieServiceImpl implements MovieService {
         Movie movie = new Movie();
         copyBasicPropertiesFromCreateRequest(request, movie);
         handleImageUploadsForCreate(movie, request);
-        setMovieRelationships(movie,request.getGenreIds(),request.getCountryIds(),request.getLanguageIds(),request.getCompanyIds());
+        setMovieRelationships(movie, request.getGenreIds(), request.getCountryIds(),
+                request.getLanguageIds(), request.getCompanyIds(),
+                request.getPersonIds(), request.getCommentIds());
         Movie savedMovie = movieRepository.save(movie);
         log.info("Successfully created movie with ID: {}", savedMovie.getId());
         return (MovieDTO) savedMovie.toDTO(MovieDTO.class);
+    }
+
+    @Override
+    public MovieDTO getMovie(Long id) throws InvalidExceptions {
+        return movieRepository.findById(id).orElseThrow(() -> new InvalidExceptions("Movie is not found")).toDTO(MovieDTO.class);
+
+    }
+
+    @Override
+    public MovieDTO updateMovie(UpdateMovieRequest request) throws InvalidExceptions, IOException {
+        log.info("Updating movie:{}", request.getTitle());
+        Movie movieUpdate = movieRepository.findById(request.getId()).orElseThrow(() -> new InvalidExceptions("Movie is not found"+request.getId()));
+        // Check for duplicates (excluding current movie)
+        if (StringUtils.hasText(request.getTitle()) && request.getReleaseDate() != null) {
+            movieRepository.findByTitleAndReleaseDate(request.getTitle(), request.getReleaseDate())
+                    .ifPresent(movie -> {
+                        if (!movie.getId().equals(request.getId())) {
+                            throw new RuntimeException(
+                                    "Movie with title '" + request.getTitle() +
+                                            "' and release date '" + request.getReleaseDate() + "' already exists");
+                        }
+                    });
+        }
+        updateMovieFields(movieUpdate, request);
+        handleImageUploadsForUpdate(movieUpdate,request);
+        setMovieRelationships(movieUpdate, request.getGenreIds(), request.getCountryIds(),
+                request.getLanguageIds(), request.getCompanyIds(),
+                request.getPersonIds(), request.getCommentIds());
+        Movie updatedMovie = movieRepository.save(movieUpdate);
+        log.info("Successfully updated movie with ID: {}", updatedMovie.getId());
+        return updatedMovie.toDTO(MovieDTO.class);
     }
 
     //    helper methods
@@ -63,11 +101,12 @@ public class MovieServiceImpl implements MovieService {
         movie.setHomepageUrl(request.getHomepageUrl());
         movie.setStatus(request.getStatus());
     }
-    private void handleImageUploadsForCreate(Movie movie,CreateMovieRequest request) throws IOException {
+
+    private void handleImageUploadsForCreate(Movie movie, CreateMovieRequest request) throws IOException {
         if (request.getPoster() != null && !request.getPoster().isEmpty()) {
             UploadOptions posterOptions = new UploadOptions();
             posterOptions.setFolder("movies/posters");
-            posterOptions.setTags(List.of("movie","poster"));
+            posterOptions.setTags(List.of("movie", "poster"));
             var posterUploadRes = cloudinaryService.uploadFileWithPublicId(request.getPoster(), posterOptions);
             movie.setPosterPath(posterUploadRes.secureUrl());
             movie.setPosterPublicId(posterUploadRes.publicId());
@@ -77,14 +116,108 @@ public class MovieServiceImpl implements MovieService {
         if (request.getBackdrop() != null && !request.getBackdrop().isEmpty()) {
             UploadOptions backdropOptions = new UploadOptions();
             backdropOptions.setFolder("movies/backdrops");
-            backdropOptions.setTags(List.of("movie","backdrop"));
+            backdropOptions.setTags(List.of("movie", "backdrop"));
             var backdropUploadRes = cloudinaryService.uploadFileWithPublicId(request.getBackdrop(), backdropOptions);
             movie.setBackdropPath(backdropUploadRes.secureUrl());
             movie.setBackdropPublicId(backdropUploadRes.publicId());
         }
     }
+    private void handleImageUploadsForUpdate(Movie movie, UpdateMovieRequest request) throws IOException {
+        handlePosterUpdate(movie, request);
+        handleBackdropUpdate(movie, request);
+    }
+
+    private void handlePosterUpdate(Movie movie, UpdateMovieRequest request) throws IOException {
+        MultipartFile newPoster = request.getPoster();
+        Boolean removePoster = request.getRemovePoster();
+
+        if (newPoster != null && !newPoster.isEmpty()) {
+            // Upload new poster
+            UploadOptions posterOptions = new UploadOptions();
+            posterOptions.setFolder("movies/posters");
+            posterOptions.setTags(List.of("movie", "poster"));
+
+            var posterUploadRes = cloudinaryService.uploadFileWithPublicId(newPoster, posterOptions);
+            String newPosterUrl = posterUploadRes.secureUrl();
+            String newPosterPublicId = posterUploadRes.publicId();
+
+            // Delete old poster if exists
+            String oldPosterPublicId = movie.getPosterPublicId();
+            String oldPosterUrl = movie.getPosterPath();
+
+            // Set new poster
+            movie.setPosterPath(newPosterUrl);
+            movie.setPosterPublicId(newPosterPublicId);
+
+            // Delete old poster from Cloudinary
+            deleteOldImage(oldPosterPublicId, oldPosterUrl, "poster");
+
+        } else if (Boolean.TRUE.equals(removePoster)) {
+            // Remove existing poster
+            String posterPublicId = movie.getPosterPublicId();
+            String posterUrl = movie.getPosterPath();
+
+            movie.setPosterPublicId(null);
+            movie.setPosterPath(null);
+
+            // Delete from Cloudinary
+            deleteOldImage(posterPublicId, posterUrl, "poster");
+        }
+    }
+
+    private void handleBackdropUpdate(Movie movie, UpdateMovieRequest request) throws IOException {
+        MultipartFile newBackdrop = request.getBackdrop();
+        Boolean removeBackdrop = request.getRemoveBackdrop();
+
+        if (newBackdrop != null && !newBackdrop.isEmpty()) {
+            // Upload new backdrop
+            UploadOptions backdropOptions = new UploadOptions();
+            backdropOptions.setFolder("movies/backdrops");
+            backdropOptions.setTags(List.of("movie", "backdrop"));
+
+            var backdropUploadRes = cloudinaryService.uploadFileWithPublicId(newBackdrop, backdropOptions);
+            String newBackdropUrl = backdropUploadRes.secureUrl();
+            String newBackdropPublicId = backdropUploadRes.publicId();
+
+            // Delete old backdrop if exists
+            String oldBackdropPublicId = movie.getBackdropPublicId();
+            String oldBackdropUrl = movie.getBackdropPath();
+
+            // Set new backdrop
+            movie.setBackdropPath(newBackdropUrl);
+            movie.setBackdropPublicId(newBackdropPublicId);
+
+            // Delete old backdrop from Cloudinary
+            deleteOldImage(oldBackdropPublicId, oldBackdropUrl, "backdrop");
+
+        } else if (Boolean.TRUE.equals(removeBackdrop)) {
+            // Remove existing backdrop
+            String backdropPublicId = movie.getBackdropPublicId();
+            String backdropUrl = movie.getBackdropPath();
+
+            movie.setBackdropPublicId(null);
+            movie.setBackdropPath(null);
+
+            // Delete from Cloudinary
+            deleteOldImage(backdropPublicId, backdropUrl, "backdrop");
+        }
+    }
+    private void deleteOldImage(String publicId, String url, String imageType) {
+        try {
+            if (StringUtils.hasText(publicId)) {
+                cloudinaryService.deleteImageByPublicId(publicId);
+                log.info("Successfully deleted old {} with publicId: {}", imageType, publicId);
+            } else if (StringUtils.hasText(url)) {
+                cloudinaryService.deleteImageByUrl(url);
+                log.info("Successfully deleted old {} with url: {}", imageType, url);
+            }
+        } catch (Exception ex) {
+            log.warn("Failed to delete old {} from Cloudinary - publicId: {}, url: {}, error: {}",
+                    imageType, publicId, url, ex.getMessage());
+        }
+    }
     private void setMovieRelationships(Movie movie, Set<Long> genreIds, Set<Long> countryIds,
-                                       Set<Long> languageIds, Set<Long> companyIds) {
+                                       Set<Long> languageIds, Set<Long> companyIds,Set<Long> personIds,Set<Long> commentIds) {
         // Set genres
         if (genreIds != null && !genreIds.isEmpty()) {
             List<Genre> genres = genreRepository.findAllById(genreIds);
@@ -135,6 +268,69 @@ public class MovieServiceImpl implements MovieService {
                 movieCompanies.add(movieCompany);
             }
             movie.setMovieCompanies(movieCompanies);
+        }
+        if (personIds != null && !personIds.isEmpty()) {
+            List<Person> persons = personRepository.findAllById(personIds);
+            Set<MovieCast> movieCasts = new HashSet<>();
+            for (Person person : persons) {
+                MovieCast movieCast = new MovieCast();
+                movieCast.setMovie(movie);
+                movieCast.setPerson(person);
+                // Có thể set thêm các thuộc tính khác như character, role, order nếu cần
+                movieCasts.add(movieCast);
+            }
+            movie.setMovieCasts(movieCasts);
+        }
+        // Set comments
+        if (commentIds != null && !commentIds.isEmpty()) {
+            List<Comment> comments = commentRepository.findAllById(commentIds);
+            Set<Comment> movieComments = new HashSet<>();
+            for (Comment comment : comments) {
+                comment.setMovie(movie); // Giả sử Comment có thuộc tính movie
+                movieComments.add(comment);
+            }
+            movie.setComments(movieComments);
+        }
+    }
+    private void updateMovieFields(Movie movie, UpdateMovieRequest request) {
+        if (StringUtils.hasText(request.getTitle())) {
+            movie.setTitle(request.getTitle());
+        }
+        if (StringUtils.hasText(request.getOriginalTitle())) {
+            movie.setOriginalTitle(request.getOriginalTitle());
+        }
+        if (StringUtils.hasText(request.getOverview())) {
+            movie.setOverview(request.getOverview());
+        }
+        if (request.getReleaseDate() != null) {
+            movie.setReleaseDate(request.getReleaseDate());
+        }
+        if (request.getRuntime() != null) {
+            movie.setRuntime(request.getRuntime());
+        }
+        if (request.getVoteAverage() != null) {
+            movie.setVoteAverage(request.getVoteAverage());
+        }
+        if (request.getVoteCount() != null) {
+            movie.setVoteCount(request.getVoteCount());
+        }
+        if (StringUtils.hasText(request.getTrailerUrl())) {
+            movie.setTrailerUrl(request.getTrailerUrl());
+        }
+        if (request.getBudget() != null) {
+            movie.setBudget(request.getBudget());
+        }
+        if (request.getRevenue() != null) {
+            movie.setRevenue(request.getRevenue());
+        }
+        if (StringUtils.hasText(request.getTagline())) {
+            movie.setTagline(request.getTagline());
+        }
+        if (StringUtils.hasText(request.getHomepageUrl())) {
+            movie.setHomepageUrl(request.getHomepageUrl());
+        }
+        if (StringUtils.hasText(request.getStatus())) {
+            movie.setStatus(request.getStatus());
         }
     }
 }

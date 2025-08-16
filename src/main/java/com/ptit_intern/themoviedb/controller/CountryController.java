@@ -1,6 +1,7 @@
 package com.ptit_intern.themoviedb.controller;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.CountryDTO;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.Country;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.service.CountryService;
@@ -35,6 +36,22 @@ public class CountryController {
     @ApiMessage("delete a country")
     public ResponseEntity<Void> deleteCountry(@PathVariable Long id) throws InvalidExceptions {
         countryService.deleteCountry(id);
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping()
+    @ApiMessage("get and search countries")
+    public ResponseEntity<ResultPagination> searchCountries(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false,defaultValue = "") String keyword,
+            @RequestParam(defaultValue = "true") boolean desc
+    ){
+        return ResponseEntity.ok(countryService.searchCountries(page,size,keyword,desc));
+    }
+    @PutMapping()
+    @ApiMessage("update info countries")
+    public ResponseEntity<Void> updateCountry(@RequestBody @Valid Country country) throws InvalidExceptions {
+        countryService.updateCountry(country);
         return ResponseEntity.ok().build();
     }
 }
