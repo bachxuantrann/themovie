@@ -1,16 +1,20 @@
 package com.ptit_intern.themoviedb.service.impl;
 
-import com.ptit_intern.themoviedb.dto.dtoClass.CommentDTO;
+import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
+import com.ptit_intern.themoviedb.dto.request.AddFavouriteMovieRequest;
 import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
 import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
 import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
 import com.ptit_intern.themoviedb.dto.response.ResultPagination;
+import com.ptit_intern.themoviedb.entity.Movie;
 import com.ptit_intern.themoviedb.entity.User;
+import com.ptit_intern.themoviedb.entity.UserFavoriteMovie;
 import com.ptit_intern.themoviedb.exception.IdInvalidExceptions;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
+import com.ptit_intern.themoviedb.repository.MovieRepository;
+import com.ptit_intern.themoviedb.repository.UserFavouriteMovieRepository;
 import com.ptit_intern.themoviedb.repository.UserRepository;
-import com.ptit_intern.themoviedb.service.CommentService;
 import com.ptit_intern.themoviedb.service.UserService;
 import com.ptit_intern.themoviedb.service.cloudinary.CloudinaryService;
 import com.ptit_intern.themoviedb.service.cloudinary.UploadOptions;
@@ -21,9 +25,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -36,9 +42,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final UserFavouriteMovieRepository userFavoriteMovieRepository;
     private final PasswordEncoder passwordEncoder;
     private final CloudinaryService cloudinaryService;
-    private final CommentService commentService;
+    private final MovieRepository movieRepository;
+    private final UserFavouriteMovieRepository userFavouriteMovieRepository;
     private String avatarDefault = "https://res.cloudinary.com/dpioj21ib/image/upload/v1754814358/default-avatar-icon-of-social-media-user-vector_vqtt1m.jpg";
 
     @Override
@@ -227,5 +235,54 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(password.trim()));
         }
         this.userRepository.save(user);
+    }
+
+    @Override
+    public void addFavouriteFilms(AddFavouriteMovieRequest request) throws InvalidExceptions {
+        if (userRepository.existsById(request.getUserId()) && movieRepository.existsById(request.getMovieId())) {
+            UserFavoriteMovie userFavoriteMovie = new UserFavoriteMovie();
+            userFavoriteMovie.setUser(userRepository.findById(request.getUserId()).get());
+            userFavoriteMovie.setMovie(movieRepository.findById(request.getMovieId()).get());
+            userFavouriteMovieRepository.save(userFavoriteMovie);
+            return;
+        }
+        throw new InvalidExceptions("userId or movieId is not existed");
+    }
+
+    @Override
+    @Transactional
+    public ResultPagination getFavouriteFilms(int page, int size, boolean desc) {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = this.userRepository.findByUsername(userName);
+        Long userId = user.getId();
+        Sort sort = Sort.by("created_at");
+        if (desc) sort = sort.descending();
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Long> movieIdsPage = userFavouriteMovieRepository.findFavoriteMovieIdsByUserId(userId, pageable);
+        List<Movie> movies = movieRepository.findAllById(movieIdsPage.getContent());
+        List<MovieDTO> movieDTOS = movieRepository.findAllById(movieIdsPage.getContent())
+                .stream().map(movie -> movie.toDTO(MovieDTO.class)).toList();
+        ResultPagination resultPagination = new ResultPagination();
+        resultPagination.setResults(movieDTOS);
+        ResultPagination.MetaInfo metaInfo = new ResultPagination.MetaInfo();
+        metaInfo.setTotal(movieIdsPage.getTotalElements());
+        metaInfo.setPage(page);
+        metaInfo.setSize(size);
+        metaInfo.setTotalPages(movieIdsPage.getTotalPages());
+        resultPagination.setMetaInfo(metaInfo);
+        return resultPagination;
+    }
+
+    @Override
+    @Transactional
+    public void removeFavouriteFilm(Long movieId) {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = this.userRepository.findByUsername(userName);
+        Long userId = user.getId();
+        if (userRepository.existsById(userId) && movieRepository.existsById(movieId)) {
+            userFavoriteMovieRepository.deleteByUserIdAndMovieId(userId, movieId);
+            return;
+        }
+        throw new RuntimeException("user or movie is not existed");
     }
 }

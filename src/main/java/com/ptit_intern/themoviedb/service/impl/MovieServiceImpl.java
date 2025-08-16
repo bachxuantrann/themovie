@@ -41,7 +41,7 @@ public class MovieServiceImpl implements MovieService {
     private final CommentRepository commentRepository;
     private final ListItemRepository listItemRepository;
     private final RatingRepository ratingRepository;
-    private final UserFavoriteMovieRepository userFavoriteMovieRepository;
+    private final UserFavouriteMovieRepository userFavouriteMovieRepository;
 
     @Transactional
     public MovieDTO createMovie(CreateMovieRequest request) throws IOException {
@@ -109,12 +109,13 @@ public class MovieServiceImpl implements MovieService {
             movieRepository.deleteById(movie.getId());
             movieRepository.flush();
             log.info("Successfully deleted movie with ID: {} and title: {}", id, movie.getTitle());
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("Failed to delete movie with ID: {}, error: {}", id, e.getMessage(), e);
             throw new RuntimeException("Failed to delete movie: " + e.getMessage(), e);
         }
 
     }
+
     private void deleteMovieImages(Movie movie) {
         // Delete poster image
         if (movie.getPosterPublicId() != null || movie.getPosterPath() != null) {
@@ -126,11 +127,12 @@ public class MovieServiceImpl implements MovieService {
             deleteOldImage(movie.getBackdropPublicId(), movie.getBackdropPath(), "backdrop");
         }
     }
+
     private void deleteMovieRelationships(Movie movie) {
         clearExistingRelationships(movie);
         ratingRepository.deleteByMovieId(movie.getId());
         commentRepository.deleteByMovieId(movie.getId());
-        userFavoriteMovieRepository.deleteByMovieId(movie.getId());
+        userFavouriteMovieRepository.deleteByMovieId(movie.getId());
         listItemRepository.deleteByMovieId(movie.getId());
     }
 

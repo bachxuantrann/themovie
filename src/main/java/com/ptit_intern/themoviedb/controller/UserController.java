@@ -2,6 +2,7 @@ package com.ptit_intern.themoviedb.controller;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.CommentDTO;
 import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
+import com.ptit_intern.themoviedb.dto.request.AddFavouriteMovieRequest;
 import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
 import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
 import com.ptit_intern.themoviedb.dto.response.ResultPagination;
@@ -105,6 +106,27 @@ public class UserController {
     @ApiMessage("delete comment")
     public ResponseEntity<Void> deleteComment(@PathVariable Long id) throws InvalidExceptions {
         commentService.deleteComment(id);
+        return ResponseEntity.ok().build();
+    }
+    @PostMapping("/favourite-films")
+    @ApiMessage("add to favourite films")
+    public ResponseEntity<Void> addFavouriteFilms(@RequestBody @Valid AddFavouriteMovieRequest request) throws InvalidExceptions {
+        userService.addFavouriteFilms(request);
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("/favourite-films")
+    @ApiMessage("get list favourite movie of user")
+    public ResponseEntity<ResultPagination> getFavouriteFilms(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "true") boolean desc
+    ) {
+        return ResponseEntity.ok().body(this.userService.getFavouriteFilms(page, size, desc));
+    }
+    @DeleteMapping("/favourite-films/{id}")
+    @ApiMessage("removie film from list film favourite")
+    public ResponseEntity<Void> removeFavouriteFilm(@PathVariable("id") Long movieId) throws InvalidExceptions {
+        userService.removeFavouriteFilm(movieId);
         return ResponseEntity.ok().build();
     }
 }
