@@ -13,4 +13,6 @@ public interface MovieService {
     MovieDTO getMovie(Long id) throws InvalidExceptions;
 
     MovieDTO updateMovie(UpdateMovieRequest request) throws InvalidExceptions, IOException;
+
+    void deleteMovie(Long id) throws InvalidExceptions;
 }

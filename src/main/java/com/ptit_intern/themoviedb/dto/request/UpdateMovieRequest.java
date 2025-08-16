@@ -72,5 +72,4 @@ public class UpdateMovieRequest {
     Set<Long> languageIds;
     Set<Long> companyIds;
     Set<Long> personIds;
-    Set<Long> commentIds;
 }

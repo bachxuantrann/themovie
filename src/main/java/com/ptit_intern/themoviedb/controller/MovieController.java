@@ -42,11 +42,18 @@ public class MovieController {
     @PutMapping()
     @ApiMessage("update movie")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> updateMovie(
+    public ResponseEntity<MovieDTO> updateMovie(
             @Valid @ModelAttribute UpdateMovieRequest request
     ) throws InvalidExceptions, IOException {
-        movieService.updateMovie(request);
+
+        return ResponseEntity.ok().body(movieService.updateMovie(request));
+    }
+    @DeleteMapping("/{id}")
+    @ApiMessage("delete movie")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteMovie(@PathVariable Long id) throws InvalidExceptions {
+        movieService.deleteMovie(id);
         return ResponseEntity.ok().build();
     }
-//    merge code
+
 }

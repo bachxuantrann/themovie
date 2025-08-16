@@ -39,16 +39,25 @@ public class MovieServiceImpl implements MovieService {
     private final CompanyRepository companyRepository;
     private final PersonRepository personRepository;
     private final CommentRepository commentRepository;
+    private final ListItemRepository listItemRepository;
+    private final RatingRepository ratingRepository;
+    private final UserFavoriteMovieRepository userFavoriteMovieRepository;
 
     @Transactional
     public MovieDTO createMovie(CreateMovieRequest request) throws IOException {
         log.info("Creating new movie:{}", request.getTitle());
+        if (request.getReleaseDate() != null &&
+                movieRepository.existsByTitleAndReleaseDate(request.getTitle(), request.getReleaseDate())) {
+            throw new RuntimeException(
+                    "Movie with title '" + request.getTitle() +
+                            "' and release date '" + request.getReleaseDate() + "' already exists");
+        }
         Movie movie = new Movie();
         copyBasicPropertiesFromCreateRequest(request, movie);
         handleImageUploadsForCreate(movie, request);
         setMovieRelationships(movie, request.getGenreIds(), request.getCountryIds(),
                 request.getLanguageIds(), request.getCompanyIds(),
-                request.getPersonIds(), request.getCommentIds());
+                request.getPersonIds());
         Movie savedMovie = movieRepository.save(movie);
         log.info("Successfully created movie with ID: {}", savedMovie.getId());
         return (MovieDTO) savedMovie.toDTO(MovieDTO.class);
@@ -63,7 +72,7 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public MovieDTO updateMovie(UpdateMovieRequest request) throws InvalidExceptions, IOException {
         log.info("Updating movie:{}", request.getTitle());
-        Movie movieUpdate = movieRepository.findById(request.getId()).orElseThrow(() -> new InvalidExceptions("Movie is not found"+request.getId()));
+        Movie movieUpdate = movieRepository.findById(request.getId()).orElseThrow(() -> new InvalidExceptions("Movie is not found" + request.getId()));
         // Check for duplicates (excluding current movie)
         if (StringUtils.hasText(request.getTitle()) && request.getReleaseDate() != null) {
             movieRepository.findByTitleAndReleaseDate(request.getTitle(), request.getReleaseDate())
@@ -76,13 +85,53 @@ public class MovieServiceImpl implements MovieService {
                     });
         }
         updateMovieFields(movieUpdate, request);
-        handleImageUploadsForUpdate(movieUpdate,request);
+        handleImageUploadsForUpdate(movieUpdate, request);
+//      update movie relationships
+        clearExistingRelationships(movieUpdate);
+        movieRepository.flush();
         setMovieRelationships(movieUpdate, request.getGenreIds(), request.getCountryIds(),
                 request.getLanguageIds(), request.getCompanyIds(),
-                request.getPersonIds(), request.getCommentIds());
+                request.getPersonIds());
         Movie updatedMovie = movieRepository.save(movieUpdate);
         log.info("Successfully updated movie with ID: {}", updatedMovie.getId());
         return updatedMovie.toDTO(MovieDTO.class);
+    }
+
+    @Override
+    public void deleteMovie(Long id) throws InvalidExceptions {
+        log.info("deleting movie:{}", id);
+        Movie movie = movieRepository.findById(id).orElseThrow(
+                () -> new InvalidExceptions("Movie is not existed")
+        );
+        try {
+            deleteMovieImages(movie);
+            deleteMovieRelationships(movie);
+            movieRepository.deleteById(movie.getId());
+            movieRepository.flush();
+            log.info("Successfully deleted movie with ID: {} and title: {}", id, movie.getTitle());
+        } catch (Exception e){
+            log.error("Failed to delete movie with ID: {}, error: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete movie: " + e.getMessage(), e);
+        }
+
+    }
+    private void deleteMovieImages(Movie movie) {
+        // Delete poster image
+        if (movie.getPosterPublicId() != null || movie.getPosterPath() != null) {
+            deleteOldImage(movie.getPosterPublicId(), movie.getPosterPath(), "poster");
+        }
+
+        // Delete backdrop image
+        if (movie.getBackdropPublicId() != null || movie.getBackdropPath() != null) {
+            deleteOldImage(movie.getBackdropPublicId(), movie.getBackdropPath(), "backdrop");
+        }
+    }
+    private void deleteMovieRelationships(Movie movie) {
+        clearExistingRelationships(movie);
+        ratingRepository.deleteByMovieId(movie.getId());
+        commentRepository.deleteByMovieId(movie.getId());
+        userFavoriteMovieRepository.deleteByMovieId(movie.getId());
+        listItemRepository.deleteByMovieId(movie.getId());
     }
 
     //    helper methods
@@ -122,6 +171,7 @@ public class MovieServiceImpl implements MovieService {
             movie.setBackdropPublicId(backdropUploadRes.publicId());
         }
     }
+
     private void handleImageUploadsForUpdate(Movie movie, UpdateMovieRequest request) throws IOException {
         handlePosterUpdate(movie, request);
         handleBackdropUpdate(movie, request);
@@ -202,6 +252,7 @@ public class MovieServiceImpl implements MovieService {
             deleteOldImage(backdropPublicId, backdropUrl, "backdrop");
         }
     }
+
     private void deleteOldImage(String publicId, String url, String imageType) {
         try {
             if (StringUtils.hasText(publicId)) {
@@ -216,8 +267,9 @@ public class MovieServiceImpl implements MovieService {
                     imageType, publicId, url, ex.getMessage());
         }
     }
+
     private void setMovieRelationships(Movie movie, Set<Long> genreIds, Set<Long> countryIds,
-                                       Set<Long> languageIds, Set<Long> companyIds,Set<Long> personIds,Set<Long> commentIds) {
+                                       Set<Long> languageIds, Set<Long> companyIds, Set<Long> personIds) {
         // Set genres
         if (genreIds != null && !genreIds.isEmpty()) {
             List<Genre> genres = genreRepository.findAllById(genreIds);
@@ -228,6 +280,7 @@ public class MovieServiceImpl implements MovieService {
                 movieGenre.setGenre(genre);
                 movieGenres.add(movieGenre);
             }
+            movieGenreRepository.saveAll(movieGenres);
             movie.setMovieGenres(movieGenres);
         }
 
@@ -241,6 +294,7 @@ public class MovieServiceImpl implements MovieService {
                 movieCountry.setCountry(country);
                 movieCountries.add(movieCountry);
             }
+            movieCountryRepository.saveAll(movieCountries);
             movie.setMovieCountries(movieCountries);
         }
 
@@ -254,6 +308,7 @@ public class MovieServiceImpl implements MovieService {
                 movieLanguage.setLanguage(language);
                 movieLanguages.add(movieLanguage);
             }
+            movieLanguageRepository.saveAll(movieLanguages);
             movie.setMovieLanguages(movieLanguages);
         }
 
@@ -267,6 +322,7 @@ public class MovieServiceImpl implements MovieService {
                 movieCompany.setCompany(company);
                 movieCompanies.add(movieCompany);
             }
+            movieCompanyRepository.saveAll(movieCompanies);
             movie.setMovieCompanies(movieCompanies);
         }
         if (personIds != null && !personIds.isEmpty()) {
@@ -279,19 +335,11 @@ public class MovieServiceImpl implements MovieService {
                 // Có thể set thêm các thuộc tính khác như character, role, order nếu cần
                 movieCasts.add(movieCast);
             }
+            movieCastRepository.saveAll(movieCasts);
             movie.setMovieCasts(movieCasts);
         }
-        // Set comments
-        if (commentIds != null && !commentIds.isEmpty()) {
-            List<Comment> comments = commentRepository.findAllById(commentIds);
-            Set<Comment> movieComments = new HashSet<>();
-            for (Comment comment : comments) {
-                comment.setMovie(movie); // Giả sử Comment có thuộc tính movie
-                movieComments.add(comment);
-            }
-            movie.setComments(movieComments);
-        }
     }
+
     private void updateMovieFields(Movie movie, UpdateMovieRequest request) {
         if (StringUtils.hasText(request.getTitle())) {
             movie.setTitle(request.getTitle());
@@ -332,5 +380,13 @@ public class MovieServiceImpl implements MovieService {
         if (StringUtils.hasText(request.getStatus())) {
             movie.setStatus(request.getStatus());
         }
+    }
+
+    private void clearExistingRelationships(Movie movie) {
+        movieCountryRepository.deleteByMovieId(movie.getId());
+        movieLanguageRepository.deleteByMovieId(movie.getId());
+        movieCompanyRepository.deleteByMovieId(movie.getId());
+        movieCastRepository.deleteByMovieId(movie.getId());
+        movieGenreRepository.deleteByMovieId(movie.getId());
     }
 }
