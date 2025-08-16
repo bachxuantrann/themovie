@@ -37,8 +37,8 @@ public class Movie extends BaseEntity<MovieDTO> {
     String backdropPublicId;
     @Column(name = "backdrop_path")
     String backdropPath;
-    @DecimalMin("0.0")
-    @DecimalMax("100.0")
+    @DecimalMin("0.00")
+    @DecimalMax("100.00")
     @Column(precision = 5, scale = 2, name = "vote_average")
     BigDecimal voteAverage;
     @Column(name = "vote_count")
