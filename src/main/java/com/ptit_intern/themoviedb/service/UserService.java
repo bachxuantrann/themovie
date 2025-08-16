@@ -1,10 +1,8 @@
 package com.ptit_intern.themoviedb.service;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
-import com.ptit_intern.themoviedb.dto.request.AddFavouriteMovieRequest;
-import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
-import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
-import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
+import com.ptit_intern.themoviedb.dto.dtoClass.UserListDTO;
+import com.ptit_intern.themoviedb.dto.request.*;
 import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.User;
 import com.ptit_intern.themoviedb.exception.IdInvalidExceptions;
@@ -12,6 +10,8 @@ import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import jakarta.validation.Valid;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     User handleGetUserByUsername(String username);
@@ -45,4 +45,18 @@ public interface UserService {
     ResultPagination getFavouriteFilms(int page, int size, boolean desc);
 
     void removeFavouriteFilm(Long id);
+
+    void createListFilm(@Valid CreateListFilmRequest request) throws InvalidExceptions;
+
+    List<UserListDTO> getUserLists(Long id);
+
+    Map<String, Object> getDetailListFilm(Long listId) throws InvalidExceptions;
+
+    void deleteListFilm(Long listId) throws InvalidExceptions;
+
+    void removeFilmFromList(Long listId, Long movieId) throws InvalidExceptions;
+
+    void updateListFilm(@Valid UserListDTO request) throws InvalidExceptions;
+
+    void addMovieToListFilm(Long listId, Long movieId) throws InvalidExceptions;
 }

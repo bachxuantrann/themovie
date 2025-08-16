@@ -1,7 +1,5 @@
 package com.ptit_intern.themoviedb.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
@@ -41,7 +39,7 @@ public class Movie extends BaseEntity<MovieDTO> {
     String backdropPath;
     @DecimalMin("0.0")
     @DecimalMax("100.0")
-    @Column(precision = 5, scale = 2,name = "vote_average")
+    @Column(precision = 5, scale = 2, name = "vote_average")
     BigDecimal voteAverage;
     @Column(name = "vote_count")
     Integer voteCount;
@@ -55,8 +53,8 @@ public class Movie extends BaseEntity<MovieDTO> {
     String homepageUrl;
     String status;
 
-//    Relationships
-    @OneToMany(mappedBy = "movie",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    //    Relationships
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<MovieGenre> movieGenres = new HashSet<>();
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<MovieCast> movieCasts = new HashSet<>();

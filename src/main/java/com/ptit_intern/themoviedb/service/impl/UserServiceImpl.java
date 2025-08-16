@@ -2,19 +2,13 @@ package com.ptit_intern.themoviedb.service.impl;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
-import com.ptit_intern.themoviedb.dto.request.AddFavouriteMovieRequest;
-import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
-import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
-import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
+import com.ptit_intern.themoviedb.dto.dtoClass.UserListDTO;
+import com.ptit_intern.themoviedb.dto.request.*;
 import com.ptit_intern.themoviedb.dto.response.ResultPagination;
-import com.ptit_intern.themoviedb.entity.Movie;
-import com.ptit_intern.themoviedb.entity.User;
-import com.ptit_intern.themoviedb.entity.UserFavoriteMovie;
+import com.ptit_intern.themoviedb.entity.*;
 import com.ptit_intern.themoviedb.exception.IdInvalidExceptions;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
-import com.ptit_intern.themoviedb.repository.MovieRepository;
-import com.ptit_intern.themoviedb.repository.UserFavouriteMovieRepository;
-import com.ptit_intern.themoviedb.repository.UserRepository;
+import com.ptit_intern.themoviedb.repository.*;
 import com.ptit_intern.themoviedb.service.UserService;
 import com.ptit_intern.themoviedb.service.cloudinary.CloudinaryService;
 import com.ptit_intern.themoviedb.service.cloudinary.UploadOptions;
@@ -33,8 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -47,7 +41,13 @@ public class UserServiceImpl implements UserService {
     private final CloudinaryService cloudinaryService;
     private final MovieRepository movieRepository;
     private final UserFavouriteMovieRepository userFavouriteMovieRepository;
+    private final UserListRepository userListRepository;
+    private final ListItemRepository listItemRepository;
     private String avatarDefault = "https://res.cloudinary.com/dpioj21ib/image/upload/v1754814358/default-avatar-icon-of-social-media-user-vector_vqtt1m.jpg";
+
+    public record MovieList(Long id, String title, Long budget, Long revenue, BigDecimal voteAverage,
+                            Integer voteCount) {
+    }
 
     @Override
     public User handleGetUserByUsername(String username) {
@@ -284,5 +284,101 @@ public class UserServiceImpl implements UserService {
             return;
         }
         throw new RuntimeException("user or movie is not existed");
+    }
+
+    @Override
+    public void createListFilm(CreateListFilmRequest request) throws InvalidExceptions {
+        if (userListRepository.existsByUserIdAndName(request.getUserId(), request.getName())) {
+            throw new InvalidExceptions("Name of list is existed");
+        }
+        UserList userList = new UserList();
+        userList.setUserId(request.getUserId());
+        userList.setName(request.getName());
+        userList.setDescription(request.getDescription());
+        userList.setIsPublic(request.getIsPublic());
+        this.userListRepository.save(userList);
+    }
+
+    @Override
+    public List<UserListDTO> getUserLists(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new UsernameNotFoundException("user not found");
+        }
+        List<UserListDTO> data = userListRepository.findByUserId(userId).stream().map(userList -> userList.toDTO(UserListDTO.class)).toList();
+        Long idOfUserHasList = data.get(0).getUserId();
+        if (userId.equals(idOfUserHasList)) {
+            return data;
+        }
+        return data.stream().filter(UserListDTO::getIsPublic).collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, Object> getDetailListFilm(Long listId) throws InvalidExceptions {
+        UserListDTO userListDTO = this.userListRepository.findById(listId).orElseThrow(
+                () -> new InvalidExceptions("List film of user is not existed")
+        ).toDTO(UserListDTO.class);
+        Set<Long> movieIds = listItemRepository.findByListId(listId)
+                .stream()
+                .map(ListItem::getMovieId)
+                .collect(Collectors.toSet());
+        List<MovieList> movieLists = movieRepository.findAllById(movieIds)
+                .stream()
+                .map(movie -> new MovieList(
+                        movie.getId(),
+                        movie.getTitle(),
+                        movie.getBudget(),
+                        movie.getRevenue(),
+                        movie.getVoteAverage(),
+                        movie.getVoteCount()
+                ))
+                .toList();
+        Map<String, Object> result = new HashMap<>();
+        result.put("movies", movieLists);
+        result.put("listFilm", userListDTO);
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public void deleteListFilm(Long listId) throws InvalidExceptions {
+        if (userListRepository.existsById(listId)) {
+            userListRepository.deleteById(listId);
+            return;
+        }
+        throw new InvalidExceptions("list film is not found");
+    }
+
+    @Override
+    @Transactional
+    public void removeFilmFromList(Long listId, Long movieId) throws InvalidExceptions {
+        if (userListRepository.existsById(listId) && movieRepository.existsById(movieId)) {
+            listItemRepository.deleteByListIdAndMovieId(listId, movieId);
+            return;
+        }
+        throw new InvalidExceptions("list or movie is not existed");
+    }
+
+    @Override
+    public void updateListFilm(UserListDTO request) throws InvalidExceptions {
+        UserList userList = this.userListRepository.findById(request.getId()).orElseThrow(() -> new InvalidExceptions("List film of user is not existed"));
+        if (userListRepository.existsByUserIdAndNameAndIdNot(request.getUserId(), request.getName(), userList.getId())) {
+            throw new InvalidExceptions("Name list film of user is existed");
+        }
+        userList.setName(request.getName());
+        userList.setDescription(request.getDescription());
+        userList.setIsPublic(request.getIsPublic());
+        this.userListRepository.save(userList);
+    }
+
+    @Override
+    public void addMovieToListFilm(Long listId, Long movieId) throws InvalidExceptions {
+        if (userListRepository.existsById(listId) && movieRepository.existsById(movieId)) {
+            ListItem listItem = new ListItem();
+            listItem.setListId(listId);
+            listItem.setMovieId(movieId);
+            listItemRepository.save(listItem);
+            return;
+        }
+        throw new InvalidExceptions("List or Movie is not existed");
     }
 }
