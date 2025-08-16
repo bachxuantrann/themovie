@@ -35,6 +35,11 @@ public class SecurityConfiguration {
     private final String[] PUBLIC_ENDPOINTS = {
             "/api/auth/login",
             "/api/auth/register",
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/swagger-resources/**",
+            "/webjars/**"
     };
     @Bean
     public PasswordEncoder passwordEncoder() {
