@@ -24,8 +24,8 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
         (:keyword IS NULL OR LOWER(p.name) LIKE CONCAT('%', LOWER(:keyword), '%'))
     AND (
         :career IS NULL
-        OR (LOWER(:career) = 'acting' AND LOWER(TRIM(p.career)) = 'acting')
-        OR (LOWER(:career) <> 'acting' AND LOWER(TRIM(p.career)) <> 'acting')
+        OR (LOWER(:career) = 'casting' AND LOWER(TRIM(p.career)) = 'casting')
+        OR (LOWER(:career) <> 'casting' AND LOWER(TRIM(p.career)) <> 'casting')
     )
     """)
     Page<Person> searchPersons(

@@ -1,6 +1,7 @@
 package com.ptit_intern.themoviedb.service;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.UserDTO;
+import com.ptit_intern.themoviedb.dto.request.AddFavouriteMovieRequest;
 import com.ptit_intern.themoviedb.dto.request.ChangePasswordRequest;
 import com.ptit_intern.themoviedb.dto.request.RegisterRequest;
 import com.ptit_intern.themoviedb.dto.request.UploadUserRequest;
@@ -8,6 +9,7 @@ import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.User;
 import com.ptit_intern.themoviedb.exception.IdInvalidExceptions;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
+import jakarta.validation.Valid;
 
 import java.io.IOException;
 
@@ -38,4 +40,9 @@ public interface UserService {
 
     void changePasswordByAdmin(Long id, String password) throws InvalidExceptions;
 
+    void addFavouriteFilms(@Valid AddFavouriteMovieRequest request) throws InvalidExceptions;
+
+    ResultPagination getFavouriteFilms(int page, int size, boolean desc);
+
+    void removeFavouriteFilm(Long id);
 }
