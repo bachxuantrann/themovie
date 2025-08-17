@@ -4,6 +4,7 @@ import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
 import com.ptit_intern.themoviedb.dto.request.UpdateMovieRequest;
 import com.ptit_intern.themoviedb.dto.response.MovieDetailResponse;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.service.MovieService;
 import com.ptit_intern.themoviedb.util.annotation.ApiMessage;
@@ -74,5 +75,15 @@ public class MovieController {
     @ApiMessage("get list film top rated")
     public ResponseEntity<List<MovieDTO>> getTopRatedMovies() {
         return ResponseEntity.ok(movieService.getTopRatedMovies());
+    }
+    @GetMapping("/searchByTitle")
+    @ApiMessage("search by title")
+    public ResponseEntity<ResultPagination> searchByTitle(
+            @RequestParam(defaultValue = "", required = false) String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "true") boolean desc
+    ){
+        return ResponseEntity.ok(movieService.searchByTitle(keyword,page,size,desc));
     }
 }

@@ -20,7 +20,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -160,6 +162,24 @@ public class MovieServiceImpl implements MovieService {
     @Override
     public List<MovieDTO> getTopRatedMovies() {
         return movieRepository.findTop10ByOrderByVoteAverageDesc().stream().map(movie -> movie.toDTO(MovieDTO.class)).toList();
+    }
+
+    @Override
+    public ResultPagination searchByTitle(String keyword, int page, int size, boolean desc) {
+        Sort sort = Sort.by("created_at");
+        if (desc) sort = sort.descending();
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Movie> movies = movieRepository.searchMovies(keyword,pageable);
+        List<MovieDTO> movieDTOS = movies.getContent().stream().map(movie -> movie.toDTO(MovieDTO.class)).toList();
+        ResultPagination resultPagination = new ResultPagination();
+        resultPagination.setResults(movieDTOS);
+        ResultPagination.MetaInfo metaInfo = new ResultPagination.MetaInfo();
+        metaInfo.setTotalPages(movies.getTotalPages());
+        metaInfo.setPage(page);
+        metaInfo.setSize(size);
+        metaInfo.setTotal(movies.getTotalElements());
+        resultPagination.setMetaInfo(metaInfo);
+        return resultPagination;
     }
 
 
