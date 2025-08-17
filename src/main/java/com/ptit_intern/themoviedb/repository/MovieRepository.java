@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
-public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecificationExecutor<Movie> {
+public interface MovieRepository extends JpaRepository<Movie, Long> {
     @Query("SELECT m FROM Movie m JOIN MovieGenre mg ON m.id = mg.movie.id WHERE mg.genre.id = :genreId")
     Page<Movie> findByGenreId(@Param("genreId") Long genreId, Pageable pageable);
 
@@ -38,6 +38,11 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecific
     Optional<Movie> findByTitleAndReleaseDate(String title, LocalDate releaseDate);
     boolean existsByTitleAndReleaseDate(String title, LocalDate releaseDate);
 
+    @Query("SELECT m FROM Movie m " +
+            "WHERE LOWER(m.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "   OR LOWER(m.originalTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "   OR LOWER(m.overview) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Movie> searchMovies(@Param("keyword") String keyword, Pageable pageable);
     // Lấy 10 phim mới nhất
     List<Movie> findTop10ByOrderByReleaseDateDesc();
     List<Movie> findTop10ByOrderByVoteAverageDesc();

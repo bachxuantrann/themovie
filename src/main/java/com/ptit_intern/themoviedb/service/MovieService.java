@@ -28,4 +28,6 @@ public interface MovieService {
     List<MovieDTO> getPopularMovies();
 
     List<MovieDTO> getTopRatedMovies();
+
+    ResultPagination searchByTitle(String keyword, int page, int size, boolean desc);
 }
