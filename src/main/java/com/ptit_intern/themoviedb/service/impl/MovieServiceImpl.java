@@ -48,7 +48,7 @@ public class MovieServiceImpl implements MovieService {
     private final UserFavouriteMovieRepository userFavouriteMovieRepository;
     private final ObjectMapper objectMapper;
 
-    @Transactional
+    @Transactional(rollbackOn = {Exception.class, IOException.class})
     public void createMovie(CreateMovieRequest request) throws IOException {
         log.info("Creating new movie:{}", request.getTitle());
         if (request.getReleaseDate() != null &&
@@ -173,7 +173,7 @@ public class MovieServiceImpl implements MovieService {
             movieCastRepository.saveAll(movieCastsToSave);
         } catch (Exception ex){
             log.error("Failed to process persons {} from movie with ID: {}",personJson, movie.getId(), ex);
-            throw new IOException("Invalid person JSON format",ex);
+            throw new RuntimeException("Invalid person JSON format",ex);
         }
     }
 
