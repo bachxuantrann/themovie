@@ -3,6 +3,7 @@ package com.ptit_intern.themoviedb.controller;
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
 import com.ptit_intern.themoviedb.dto.request.UpdateMovieRequest;
+import com.ptit_intern.themoviedb.dto.response.MovieDetailResponse;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.service.MovieService;
 import com.ptit_intern.themoviedb.util.annotation.ApiMessage;
@@ -26,27 +27,33 @@ public class MovieController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, path = "/create")
     @ApiMessage("create new movie")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MovieDTO> createMovie(
+    public ResponseEntity<Void> createMovie(
             @Valid @ModelAttribute CreateMovieRequest request
     ) throws IOException {
         log.info("Create new movie {}", request.getTitle());
-        return ResponseEntity.ok().body(movieService.createMovie(request));
+        movieService.createMovie(request);
+        return ResponseEntity.ok().build();
     }
 
+//    @GetMapping("/{id}")
+//    @ApiMessage("get movie")
+//    public ResponseEntity<MovieDTO> getMovie(@PathVariable Long id) throws InvalidExceptions {
+//        return ResponseEntity.ok(movieService.getMovie(id));
+//    }
     @GetMapping("/{id}")
-    @ApiMessage("get info detail movie")
-    public ResponseEntity<MovieDTO> getMovie(@PathVariable Long id) throws InvalidExceptions {
-        return ResponseEntity.ok(movieService.getMovie(id));
+    @ApiMessage("get detail movie")
+    public ResponseEntity<MovieDetailResponse> getMovieDetail(@PathVariable("id") Long id) throws InvalidExceptions {
+        return ResponseEntity.ok(movieService.getMovieDetail(id));
     }
 
     @PutMapping()
     @ApiMessage("update movie")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MovieDTO> updateMovie(
+    public ResponseEntity<Void> updateMovie(
             @Valid @ModelAttribute UpdateMovieRequest request
     ) throws InvalidExceptions, IOException {
-
-        return ResponseEntity.ok().body(movieService.updateMovie(request));
+        movieService.updateMovie(request);
+        return ResponseEntity.ok().build();
     }
     @DeleteMapping("/{id}")
     @ApiMessage("delete movie")

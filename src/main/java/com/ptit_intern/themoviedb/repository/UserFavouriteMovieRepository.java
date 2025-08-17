@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserFavouriteMovieRepository extends JpaRepository<UserFavoriteMovie, Long> {
     @Modifying
-    @Query("DELETE FROM UserFavoriteMovie ufm WHERE ufm.user.id = :userId AND ufm.movie.id = :movieId")
+    @Query("DELETE FROM UserFavoriteMovie ufm WHERE ufm.movie.id = :movieId")
     void deleteByMovieId(@Param("movieId") Long movieId);
 
     @Query("SELECT ufm.movie.id " +

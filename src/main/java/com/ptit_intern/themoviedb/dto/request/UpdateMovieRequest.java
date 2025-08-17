@@ -71,5 +71,5 @@ public class UpdateMovieRequest {
     Set<Long> countryIds;
     Set<Long> languageIds;
     Set<Long> companyIds;
-    Set<Long> personIds;
+    String persons;
 }

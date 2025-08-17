@@ -53,6 +53,6 @@ public class MovieDTO {
     Set<CountryDTO> countries;
     Set<LanguageDTO> languages;
     Set<CompanyDTO> companies;
-    Set<PersonDTO> persons;
+//    Set<PersonDTO> persons;
     Set<CommentDTO> comments;
 }
