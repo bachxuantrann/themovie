@@ -1,8 +1,14 @@
 package com.ptit_intern.themoviedb.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
+import com.ptit_intern.themoviedb.dto.dtoClass.PersonDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
+import com.ptit_intern.themoviedb.dto.request.PersonCastRequest;
 import com.ptit_intern.themoviedb.dto.request.UpdateMovieRequest;
+import com.ptit_intern.themoviedb.dto.response.MovieCastInfo;
+import com.ptit_intern.themoviedb.dto.response.MovieDetailResponse;
 import com.ptit_intern.themoviedb.entity.*;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.repository.*;
@@ -17,9 +23,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -42,9 +46,10 @@ public class MovieServiceImpl implements MovieService {
     private final ListItemRepository listItemRepository;
     private final RatingRepository ratingRepository;
     private final UserFavouriteMovieRepository userFavouriteMovieRepository;
+    private final ObjectMapper objectMapper;
 
     @Transactional
-    public MovieDTO createMovie(CreateMovieRequest request) throws IOException {
+    public void createMovie(CreateMovieRequest request) throws IOException {
         log.info("Creating new movie:{}", request.getTitle());
         if (request.getReleaseDate() != null &&
                 movieRepository.existsByTitleAndReleaseDate(request.getTitle(), request.getReleaseDate())) {
@@ -55,12 +60,13 @@ public class MovieServiceImpl implements MovieService {
         Movie movie = new Movie();
         copyBasicPropertiesFromCreateRequest(request, movie);
         handleImageUploadsForCreate(movie, request);
-        setMovieRelationships(movie, request.getGenreIds(), request.getCountryIds(),
-                request.getLanguageIds(), request.getCompanyIds(),
-                request.getPersonIds());
         Movie savedMovie = movieRepository.save(movie);
+        setMovieRelationships(savedMovie, request.getGenreIds(), request.getCountryIds(),
+                request.getLanguageIds(), request.getCompanyIds());
+        if (StringUtils.hasText(request.getPersons())){
+            processPersons(request.getPersons(), savedMovie);
+        }
         log.info("Successfully created movie with ID: {}", savedMovie.getId());
-        return (MovieDTO) savedMovie.toDTO(MovieDTO.class);
     }
 
     @Override
@@ -70,7 +76,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public MovieDTO updateMovie(UpdateMovieRequest request) throws InvalidExceptions, IOException {
+    public void updateMovie(UpdateMovieRequest request) throws InvalidExceptions, IOException {
         log.info("Updating movie:{}", request.getTitle());
         Movie movieUpdate = movieRepository.findById(request.getId()).orElseThrow(() -> new InvalidExceptions("Movie is not found" + request.getId()));
         // Check for duplicates (excluding current movie)
@@ -90,11 +96,13 @@ public class MovieServiceImpl implements MovieService {
         clearExistingRelationships(movieUpdate);
         movieRepository.flush();
         setMovieRelationships(movieUpdate, request.getGenreIds(), request.getCountryIds(),
-                request.getLanguageIds(), request.getCompanyIds(),
-                request.getPersonIds());
+                request.getLanguageIds(), request.getCompanyIds()
+                );
+        if (StringUtils.hasText(request.getPersons())){
+            processPersons(request.getPersons(), movieUpdate);
+        }
         Movie updatedMovie = movieRepository.save(movieUpdate);
         log.info("Successfully updated movie with ID: {}", updatedMovie.getId());
-        return updatedMovie.toDTO(MovieDTO.class);
     }
 
     @Override
@@ -114,6 +122,59 @@ public class MovieServiceImpl implements MovieService {
             throw new RuntimeException("Failed to delete movie: " + e.getMessage(), e);
         }
 
+    }
+
+    @Override
+    public MovieDetailResponse getMovieDetail(Long id) throws InvalidExceptions {
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new InvalidExceptions("Movie not found with id: " + id));
+        MovieDetailResponse response = new MovieDetailResponse();
+        response.setMovie(movie.toDTO(MovieDTO.class));
+        List<MovieCastInfo> castings = new ArrayList<>();
+        List<MovieCastInfo> crews = new ArrayList<>();
+        for (MovieCast movieCast : movie.getMovieCasts()) {
+            MovieCastInfo castInfo = new MovieCastInfo();
+            castInfo.setPersonDTO(movieCast.getPerson().toDTO(PersonDTO.class));
+            castInfo.setJob(movieCast.getJob());
+            castInfo.setCharacterName(!Objects.equals(movieCast.getCharacterName(), "") ? movieCast.getCharacterName() : "");
+            if ("Casting".equalsIgnoreCase(movieCast.getJob())) {
+                castings.add(castInfo);
+            } else {
+                crews.add(castInfo);
+            }
+        }
+        response.setCasting(castings);
+        response.setCrew(crews);
+        return response;
+    }
+
+    private void processPersons(String personJson, Movie movie) throws IOException{
+        try {
+            log.info("Processing persons JSON for movie ID: {}", movie.getId());
+            log.debug("Raw JSON: {}", personJson);
+            List<PersonCastRequest> personRequests = objectMapper.readValue(
+                    personJson, new TypeReference<List<PersonCastRequest>>() {}
+            );
+            log.info("Successfully parsed {} person requests", personRequests.size());
+            List<MovieCast> movieCastsToSave = new ArrayList<>();
+            for (PersonCastRequest personRequest : personRequests) {
+                log.debug("Processing person request: {}", personRequest);
+                Person person = personRepository.findById(personRequest.getPersonId())
+                        .orElseThrow(() -> new InvalidExceptions("Person is not found" + personRequest.getPersonId()));
+                MovieCast movieCast = MovieCast.builder().movie(movie).person(person).job(personRequest.getJob()).build();
+                if ("Casting".equalsIgnoreCase(personRequest.getJob()) && StringUtils.hasText(personRequest.getCharacterName())){
+                    movieCast.setCharacterName(personRequest.getCharacterName());
+                } else {
+                    movieCast.setCharacterName("");
+                }
+                movieCastsToSave.add(movieCast);
+                log.debug("Created MovieCast: job={}, characterName={}", personRequest.getJob(), movieCast.getCharacterName());
+            }
+            movieCastRepository.saveAll(movieCastsToSave);
+        } catch (Exception ex){
+            log.error("Failed to process persons {} from movie with ID: {}",personJson, movie.getId(), ex);
+            throw new IOException("Invalid person JSON format",ex);
+        }
     }
 
     private void deleteMovieImages(Movie movie) {
@@ -271,7 +332,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     private void setMovieRelationships(Movie movie, Set<Long> genreIds, Set<Long> countryIds,
-                                       Set<Long> languageIds, Set<Long> companyIds, Set<Long> personIds) {
+                                       Set<Long> languageIds, Set<Long> companyIds) {
         // Set genres
         if (genreIds != null && !genreIds.isEmpty()) {
             List<Genre> genres = genreRepository.findAllById(genreIds);
@@ -326,19 +387,6 @@ public class MovieServiceImpl implements MovieService {
             }
             movieCompanyRepository.saveAll(movieCompanies);
             movie.setMovieCompanies(movieCompanies);
-        }
-        if (personIds != null && !personIds.isEmpty()) {
-            List<Person> persons = personRepository.findAllById(personIds);
-            Set<MovieCast> movieCasts = new HashSet<>();
-            for (Person person : persons) {
-                MovieCast movieCast = new MovieCast();
-                movieCast.setMovie(movie);
-                movieCast.setPerson(person);
-                // Có thể set thêm các thuộc tính khác như character, role, order nếu cần
-                movieCasts.add(movieCast);
-            }
-            movieCastRepository.saveAll(movieCasts);
-            movie.setMovieCasts(movieCasts);
         }
     }
 

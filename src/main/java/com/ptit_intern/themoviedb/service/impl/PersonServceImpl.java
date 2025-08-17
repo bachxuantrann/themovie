@@ -136,11 +136,11 @@ public class PersonServceImpl implements PersonService {
     private void transferDataField(Person person, String name, String career, String biography, LocalDate birthDate, String placeOfBirth, LocalDate deathDate, String gender) {
         person.setName(name);
         person.setCareer(career);
-        person.setBiography(biography);
-        person.setBirthDate(birthDate);
-        person.setPlaceOfBirth(placeOfBirth);
-        person.setDeathDate(deathDate);
-        person.setGender(GenderEnum.valueOf(gender.toUpperCase()));
+        person.setBiography(biography != null ? biography : person.getBiography());
+        person.setBirthDate(birthDate != null ? birthDate : person.getBirthDate());
+        person.setPlaceOfBirth(placeOfBirth != null ? placeOfBirth : person.getPlaceOfBirth());
+        person.setDeathDate(deathDate != null ? deathDate : person.getDeathDate());
+        person.setGender(gender != null ?  (GenderEnum.valueOf(gender.toUpperCase())) : person.getGender());
     }
 
     private boolean isExisted(String name) {
