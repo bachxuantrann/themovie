@@ -4,9 +4,14 @@ import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
 import com.ptit_intern.themoviedb.dto.request.UpdateMovieRequest;
 import com.ptit_intern.themoviedb.dto.response.MovieDetailResponse;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
+import com.ptit_intern.themoviedb.entity.Movie;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface MovieService {
     void createMovie(CreateMovieRequest request) throws IOException;
@@ -18,4 +23,9 @@ public interface MovieService {
     void deleteMovie(Long id) throws InvalidExceptions;
 
     MovieDetailResponse getMovieDetail(Long id) throws InvalidExceptions;
+
+
+    List<MovieDTO> getPopularMovies();
+
+    List<MovieDTO> getTopRatedMovies();
 }

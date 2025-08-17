@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -35,7 +36,7 @@ public class MovieController {
         return ResponseEntity.ok().build();
     }
 
-//    @GetMapping("/{id}")
+    //    @GetMapping("/{id}")
 //    @ApiMessage("get movie")
 //    public ResponseEntity<MovieDTO> getMovie(@PathVariable Long id) throws InvalidExceptions {
 //        return ResponseEntity.ok(movieService.getMovie(id));
@@ -55,6 +56,7 @@ public class MovieController {
         movieService.updateMovie(request);
         return ResponseEntity.ok().build();
     }
+
     @DeleteMapping("/{id}")
     @ApiMessage("delete movie")
     @PreAuthorize("hasRole('ADMIN')")
@@ -63,4 +65,14 @@ public class MovieController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/popular")
+    @ApiMessage("get list film popular")
+    public ResponseEntity<List<MovieDTO>> getPopularMovies() {
+        return ResponseEntity.ok(movieService.getPopularMovies());
+    }
+    @GetMapping("/top-rated")
+    @ApiMessage("get list film top rated")
+    public ResponseEntity<List<MovieDTO>> getTopRatedMovies() {
+        return ResponseEntity.ok(movieService.getTopRatedMovies());
+    }
 }

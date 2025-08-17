@@ -4,15 +4,19 @@ import com.ptit_intern.themoviedb.entity.Movie;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
-public interface MovieRepository extends JpaRepository<Movie, Long> {
+public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecificationExecutor<Movie> {
     @Query("SELECT m FROM Movie m JOIN MovieGenre mg ON m.id = mg.movie.id WHERE mg.genre.id = :genreId")
     Page<Movie> findByGenreId(@Param("genreId") Long genreId, Pageable pageable);
 
@@ -33,4 +37,8 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     Optional<Movie> findByTitleAndReleaseDate(String title, LocalDate releaseDate);
     boolean existsByTitleAndReleaseDate(String title, LocalDate releaseDate);
+
+    // Lấy 10 phim mới nhất
+    List<Movie> findTop10ByOrderByReleaseDateDesc();
+    List<Movie> findTop10ByOrderByVoteAverageDesc();
 }
