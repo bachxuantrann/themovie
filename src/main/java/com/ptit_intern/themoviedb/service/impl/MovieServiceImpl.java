@@ -9,6 +9,7 @@ import com.ptit_intern.themoviedb.dto.request.PersonCastRequest;
 import com.ptit_intern.themoviedb.dto.request.UpdateMovieRequest;
 import com.ptit_intern.themoviedb.dto.response.MovieCastInfo;
 import com.ptit_intern.themoviedb.dto.response.MovieDetailResponse;
+import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.*;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import com.ptit_intern.themoviedb.repository.*;
@@ -18,6 +19,9 @@ import com.ptit_intern.themoviedb.service.cloudinary.UploadOptions;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,7 +52,7 @@ public class MovieServiceImpl implements MovieService {
     private final UserFavouriteMovieRepository userFavouriteMovieRepository;
     private final ObjectMapper objectMapper;
 
-    @Transactional
+    @Transactional(rollbackOn = {Exception.class, IOException.class})
     public void createMovie(CreateMovieRequest request) throws IOException {
         log.info("Creating new movie:{}", request.getTitle());
         if (request.getReleaseDate() != null &&
@@ -63,7 +67,7 @@ public class MovieServiceImpl implements MovieService {
         Movie savedMovie = movieRepository.save(movie);
         setMovieRelationships(savedMovie, request.getGenreIds(), request.getCountryIds(),
                 request.getLanguageIds(), request.getCompanyIds());
-        if (StringUtils.hasText(request.getPersons())){
+        if (StringUtils.hasText(request.getPersons())) {
             processPersons(request.getPersons(), savedMovie);
         }
         log.info("Successfully created movie with ID: {}", savedMovie.getId());
@@ -97,8 +101,8 @@ public class MovieServiceImpl implements MovieService {
         movieRepository.flush();
         setMovieRelationships(movieUpdate, request.getGenreIds(), request.getCountryIds(),
                 request.getLanguageIds(), request.getCompanyIds()
-                );
-        if (StringUtils.hasText(request.getPersons())){
+        );
+        if (StringUtils.hasText(request.getPersons())) {
             processPersons(request.getPersons(), movieUpdate);
         }
         Movie updatedMovie = movieRepository.save(movieUpdate);
@@ -148,12 +152,24 @@ public class MovieServiceImpl implements MovieService {
         return response;
     }
 
-    private void processPersons(String personJson, Movie movie) throws IOException{
+    @Override
+    public List<MovieDTO> getPopularMovies() {
+        return movieRepository.findTop10ByOrderByReleaseDateDesc().stream().map(movie -> movie.toDTO(MovieDTO.class)).toList();
+    }
+
+    @Override
+    public List<MovieDTO> getTopRatedMovies() {
+        return movieRepository.findTop10ByOrderByVoteAverageDesc().stream().map(movie -> movie.toDTO(MovieDTO.class)).toList();
+    }
+
+
+    private void processPersons(String personJson, Movie movie) throws IOException {
         try {
             log.info("Processing persons JSON for movie ID: {}", movie.getId());
             log.debug("Raw JSON: {}", personJson);
             List<PersonCastRequest> personRequests = objectMapper.readValue(
-                    personJson, new TypeReference<List<PersonCastRequest>>() {}
+                    personJson, new TypeReference<List<PersonCastRequest>>() {
+                    }
             );
             log.info("Successfully parsed {} person requests", personRequests.size());
             List<MovieCast> movieCastsToSave = new ArrayList<>();
@@ -162,7 +178,7 @@ public class MovieServiceImpl implements MovieService {
                 Person person = personRepository.findById(personRequest.getPersonId())
                         .orElseThrow(() -> new InvalidExceptions("Person is not found" + personRequest.getPersonId()));
                 MovieCast movieCast = MovieCast.builder().movie(movie).person(person).job(personRequest.getJob()).build();
-                if ("Casting".equalsIgnoreCase(personRequest.getJob()) && StringUtils.hasText(personRequest.getCharacterName())){
+                if ("Casting".equalsIgnoreCase(personRequest.getJob()) && StringUtils.hasText(personRequest.getCharacterName())) {
                     movieCast.setCharacterName(personRequest.getCharacterName());
                 } else {
                     movieCast.setCharacterName("");
@@ -171,9 +187,9 @@ public class MovieServiceImpl implements MovieService {
                 log.debug("Created MovieCast: job={}, characterName={}", personRequest.getJob(), movieCast.getCharacterName());
             }
             movieCastRepository.saveAll(movieCastsToSave);
-        } catch (Exception ex){
-            log.error("Failed to process persons {} from movie with ID: {}",personJson, movie.getId(), ex);
-            throw new IOException("Invalid person JSON format",ex);
+        } catch (Exception ex) {
+            log.error("Failed to process persons {} from movie with ID: {}", personJson, movie.getId(), ex);
+            throw new RuntimeException("Invalid person JSON format", ex);
         }
     }
 
@@ -439,4 +455,5 @@ public class MovieServiceImpl implements MovieService {
         movieCastRepository.deleteByMovieId(movie.getId());
         movieGenreRepository.deleteByMovieId(movie.getId());
     }
+
 }
