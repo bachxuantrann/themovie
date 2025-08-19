@@ -16,6 +16,7 @@ import com.ptit_intern.themoviedb.repository.*;
 import com.ptit_intern.themoviedb.service.MovieService;
 import com.ptit_intern.themoviedb.service.cloudinary.CloudinaryService;
 import com.ptit_intern.themoviedb.service.cloudinary.UploadOptions;
+import com.ptit_intern.themoviedb.util.enums.GenderEnum;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.*;
 
 @Slf4j
@@ -53,6 +55,9 @@ public class MovieServiceImpl implements MovieService {
     private final RatingRepository ratingRepository;
     private final UserFavouriteMovieRepository userFavouriteMovieRepository;
     private final ObjectMapper objectMapper;
+
+    public record MovieGeneral(Long id, String title, String originalTitle, String overview, LocalDate releaseDate,String posterPath,String backdropPath){}
+    public record PersonGeneral(Long id, String name, String career, String profilePath, String biography, GenderEnum gender){}
 
     @Transactional(rollbackOn = {Exception.class, IOException.class})
     public void createMovie(CreateMovieRequest request) throws IOException {
@@ -182,6 +187,48 @@ public class MovieServiceImpl implements MovieService {
         return resultPagination;
     }
 
+    @Override
+    public Map<String,Object> searchGeneral(String keyword, int page, int size, boolean desc) {
+        Map<String,Object> result = new HashMap<>();
+        if (keyword == null || keyword.isEmpty() || keyword.equals("")) {
+            result.put("movies","");
+            result.put("persons","");
+            return result;
+        }
+        Sort sort = Sort.by("created_at");
+        if (desc) sort = sort.descending();
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Movie> movies = movieRepository.searchMovies(keyword,pageable);
+        Page<Person> persons = personRepository.searchPersonsByName(keyword,pageable);
+        List<MovieGeneral> movieDTOS = movies.getContent().stream().map(
+                movie -> new MovieGeneral(
+                        movie.getId(),movie.getTitle(),movie.getOriginalTitle(),movie.getOverview(),
+                        movie.getReleaseDate(),movie.getPosterPath(),movie.getBackdropPath()
+                )).toList();
+        List<PersonGeneral> personDTOS = persons.getContent().stream().map(
+                person -> new PersonGeneral(
+                        person.getId(),person.getName(),person.getCareer(),
+                        person.getProfilePath(),person.getBiography(),person.getGender())
+                ).toList();
+        ResultPagination resultMovies = new ResultPagination();
+        ResultPagination resultPersons = new ResultPagination();
+        resultMovies.setResults(movieDTOS);
+        resultPersons.setResults(personDTOS);
+        ResultPagination.MetaInfo metaInfoMovies = new ResultPagination.MetaInfo();
+        metaInfoMovies.setTotalPages(movies.getTotalPages());
+        metaInfoMovies.setPage(page);
+        metaInfoMovies.setSize(size);
+        metaInfoMovies.setTotal(movies.getTotalElements());
+        resultMovies.setMetaInfo(metaInfoMovies);
+        ResultPagination.MetaInfo metaInfoPersons = new ResultPagination.MetaInfo();
+        metaInfoPersons.setTotalPages(persons.getTotalPages());
+        metaInfoPersons.setPage(page);
+        metaInfoPersons.setSize(size);
+        metaInfoPersons.setTotal(persons.getTotalElements());
+        result.put("movies",resultMovies);
+        result.put("persons",resultPersons);
+        return result;
+    }
 
     private void processPersons(String personJson, Movie movie) throws IOException {
         try {

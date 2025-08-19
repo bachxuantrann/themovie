@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface MovieService {
     void createMovie(CreateMovieRequest request) throws IOException;
@@ -30,4 +31,6 @@ public interface MovieService {
     List<MovieDTO> getTopRatedMovies();
 
     ResultPagination searchByTitle(String keyword, int page, int size, boolean desc);
+
+    Map<String,Object> searchGeneral(String keyword, int page, int size, boolean desc);
 }
