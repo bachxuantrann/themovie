@@ -33,5 +33,8 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
             @Param("career") String career,
             Pageable pageable
     );
+    @Query("SELECT p FROM Person p " +
+            "WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Person> searchPersonsByName(@Param("keyword") String keyword, Pageable pageable);
 
 }

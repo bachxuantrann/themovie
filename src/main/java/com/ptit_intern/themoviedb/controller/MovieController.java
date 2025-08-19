@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -85,5 +86,15 @@ public class MovieController {
             @RequestParam(defaultValue = "true") boolean desc
     ){
         return ResponseEntity.ok(movieService.searchByTitle(keyword,page,size,desc));
+    }
+    @GetMapping("/searchGeneral")
+    @ApiMessage("search general")
+    public ResponseEntity<Map<String,Object>> searchGeneral(
+            @RequestParam(defaultValue = "",required = false) String keyword,
+            @RequestParam(defaultValue = "1")int page,
+            @RequestParam(defaultValue = "10")int size,
+            @RequestParam(defaultValue = "true") boolean desc
+    ) {
+        return ResponseEntity.ok(movieService.searchGeneral(keyword,page,size,desc));
     }
 }
