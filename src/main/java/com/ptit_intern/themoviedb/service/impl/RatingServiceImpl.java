@@ -18,18 +18,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RatingServiceImpl implements RatingService {
     private final RatingRepository ratingRepository;
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
 
-    public record MovieRatingofUser(Long id, String title, BigDecimal score, BigDecimal voteAverage,
-                                    Integer voteCount) {
+    public record MovieRatingofUser(Long id, String title, BigDecimal yourRating, BigDecimal voteAverage,
+                                    Integer voteCount, String posterPath, String backdropPath, LocalDate releaseDate) {
     }
 
     @Override
@@ -44,7 +47,7 @@ public class RatingServiceImpl implements RatingService {
         rating.setScore(request.getScore());
         rating.setUser(user);
         rating.setMovie(movie);
-        Rating savedRating = ratingRepository.save(rating);
+        ratingRepository.save(rating);
         updateMovieRatingStats(movie.getId());
     }
 
@@ -74,7 +77,10 @@ public class RatingServiceImpl implements RatingService {
                         rating.getMovie().getTitle(),
                         rating.getScore(),
                         rating.getMovie().getVoteAverage(),
-                        rating.getMovie().getVoteCount()
+                        rating.getMovie().getVoteCount(),
+                        rating.getMovie().getPosterPath(),
+                        rating.getMovie().getBackdropPath(),
+                        rating.getMovie().getReleaseDate()
                 )
         );
         ResultPagination resultPagination = new ResultPagination();
