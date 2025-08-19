@@ -1,6 +1,8 @@
 package com.ptit_intern.themoviedb.repository;
 
+import com.ptit_intern.themoviedb.entity.Movie;
 import com.ptit_intern.themoviedb.entity.MovieCast;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+
 @Repository
 public interface MovieCastRepository extends JpaRepository<MovieCast, Long> {
     @Query("SELECT mc FROM MovieCast mc WHERE mc.movie.id = :movieId AND mc.job = 'actor' ORDER BY mc.orderIndex ASC, mc.person.name ASC")
@@ -40,4 +43,7 @@ public interface MovieCastRepository extends JpaRepository<MovieCast, Long> {
     @Modifying
     @Query("DELETE FROM MovieCast mca WHERE mca.movie.id = :movieId")
     void deleteByMovieId(@Param("movieId") Long movieId);
+
+    @Query("SELECT mc.movie FROM MovieCast mc WHERE mc.person.id = :personId")
+    List<Movie> findAllByPersonId(@Param("personId") Long personId);
 }
