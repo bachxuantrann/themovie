@@ -8,11 +8,12 @@ import com.ptit_intern.themoviedb.exception.InvalidExceptions;
 import jakarta.validation.Valid;
 
 import java.io.IOException;
+import java.util.Map;
 
 public interface PersonService {
     void createPerson(CreatePersonRequest request) throws InvalidExceptions, IOException;
 
-    PersonDTO getPerson(Long id) throws InvalidExceptions;
+    Map<String,Object> getPerson(Long id) throws InvalidExceptions;
 
     void deletePerson(Long id) throws InvalidExceptions;
 

@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/persons")
@@ -31,8 +32,8 @@ public class PersonController {
     }
 
     @GetMapping("/{id}")
-    @ApiMessage("get person")
-    public ResponseEntity<PersonDTO> getPerson(@PathVariable Long id) throws InvalidExceptions {
+    @ApiMessage("get person detail")
+    public ResponseEntity<Map<String,Object>> getPerson(@PathVariable Long id) throws InvalidExceptions {
         return ResponseEntity.ok(personService.getPerson(id));
     }
     @DeleteMapping("/{id}")
