@@ -35,4 +35,6 @@ public interface MovieService {
     ResultPagination searchByTitle(String keyword, int page, int size, boolean desc);
 
     Map<String,Object> searchGeneral(String keyword, int page, int size, boolean desc);
+
+    Map<String, Object> getStatusMovie(Long movieId);
 }
