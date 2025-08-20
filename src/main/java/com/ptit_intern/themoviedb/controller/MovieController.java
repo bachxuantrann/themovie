@@ -1,6 +1,7 @@
 package com.ptit_intern.themoviedb.controller;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
+import com.ptit_intern.themoviedb.dto.request.AdvanceSearchRequest;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
 import com.ptit_intern.themoviedb.dto.request.UpdateMovieRequest;
 import com.ptit_intern.themoviedb.dto.response.MovieDetailResponse;
@@ -11,14 +12,18 @@ import com.ptit_intern.themoviedb.util.annotation.ApiMessage;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -96,5 +101,30 @@ public class MovieController {
             @RequestParam(defaultValue = "true") boolean desc
     ) {
         return ResponseEntity.ok(movieService.searchGeneral(keyword,page,size,desc));
+    }
+    @GetMapping("/search")
+    @ApiMessage("advanced search movies")
+    public ResponseEntity<ResultPagination> advancedSearch(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Set<Long> genreIds,
+            @RequestParam(required = false) Set<Long> countryIds,
+            @RequestParam(required = false) Set<Long> languageIds,
+            @RequestParam(required = false) BigDecimal minVoteAverage,
+            @RequestParam(required = false) BigDecimal maxVoteAverage,
+            @RequestParam(required = false) Integer minRuntime,
+            @RequestParam(required = false) Integer maxRuntime,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromReleaseDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toReleaseDate,
+            @RequestParam(defaultValue = "releaseDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) throws InvalidExceptions {
+        AdvanceSearchRequest request = new AdvanceSearchRequest(
+                title, genreIds, countryIds, languageIds,
+                minVoteAverage, maxVoteAverage, minRuntime, maxRuntime,
+                fromReleaseDate, toReleaseDate, sortBy, sortDirection, page, size
+        );
+        return ResponseEntity.ok(movieService.advancedSearch(request));
     }
 }

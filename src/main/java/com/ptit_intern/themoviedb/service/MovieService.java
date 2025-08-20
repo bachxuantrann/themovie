@@ -1,6 +1,7 @@
 package com.ptit_intern.themoviedb.service;
 
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
+import com.ptit_intern.themoviedb.dto.request.AdvanceSearchRequest;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
 import com.ptit_intern.themoviedb.dto.request.UpdateMovieRequest;
 import com.ptit_intern.themoviedb.dto.response.MovieDetailResponse;
@@ -25,6 +26,7 @@ public interface MovieService {
 
     MovieDetailResponse getMovieDetail(Long id) throws InvalidExceptions;
 
+    ResultPagination advancedSearch(AdvanceSearchRequest request) throws InvalidExceptions;
 
     List<MovieDTO> getPopularMovies();
 
