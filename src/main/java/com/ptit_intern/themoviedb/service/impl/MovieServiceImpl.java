@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.dtoClass.PersonDTO;
+import com.ptit_intern.themoviedb.dto.request.AdvanceSearchRequest;
 import com.ptit_intern.themoviedb.dto.request.CreateMovieRequest;
 import com.ptit_intern.themoviedb.dto.request.PersonCastRequest;
 import com.ptit_intern.themoviedb.dto.request.UpdateMovieRequest;
@@ -30,6 +31,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -56,8 +58,17 @@ public class MovieServiceImpl implements MovieService {
     private final UserFavouriteMovieRepository userFavouriteMovieRepository;
     private final ObjectMapper objectMapper;
 
-    public record MovieGeneral(Long id, String title, String originalTitle, String overview, LocalDate releaseDate,String posterPath,String backdropPath){}
-    public record PersonGeneral(Long id, String name, String career, String profilePath, String biography, GenderEnum gender){}
+    public record MovieGeneral(Long id, String title, String originalTitle, String overview, LocalDate releaseDate,
+                               String posterPath, String backdropPath) {
+    }
+
+    public record PersonGeneral(Long id, String name, String career, String profilePath, String biography,
+                                GenderEnum gender) {
+    }
+
+    public record MovieSearchAdvanced(Long id, String title, String originalTitle, LocalDate releaseDate,
+                                      BigDecimal voteAverage, String posterPath, String backdropPath, Integer runtime) {
+    }
 
     @Transactional(rollbackOn = {Exception.class, IOException.class})
     public void createMovie(CreateMovieRequest request) throws IOException {
@@ -160,6 +171,24 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
+    public ResultPagination advancedSearch(AdvanceSearchRequest request) throws InvalidExceptions {
+        validateAdvancedSearchRequest(request);
+        Specification<Movie> specification = MovieSpecification.buildSpecification(request);
+        Sort sort = MovieSpecification.buildSort(request.getSortBy(), request.getSortDirection());
+        Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize(), sort);
+        Page<Movie> moviePage = movieRepository.findAll(specification, pageable);
+        List<MovieSearchAdvanced> movieDTOS = moviePage.getContent().stream().map(movie ->
+                new MovieSearchAdvanced(movie.getId(), movie.getTitle(), movie.getOriginalTitle(), movie.getReleaseDate(),
+                        movie.getVoteAverage(), movie.getPosterPath(), movie.getBackdropPath(), movie.getRuntime())).toList();
+        ResultPagination.MetaInfo metaInfo = new ResultPagination.MetaInfo();
+        metaInfo.setTotal(moviePage.getTotalElements());
+        metaInfo.setTotalPages(moviePage.getTotalPages());
+        metaInfo.setPage(request.getPage());
+        metaInfo.setSize(request.getSize());
+        return new ResultPagination(metaInfo, movieDTOS);
+    }
+
+    @Override
     public List<MovieDTO> getPopularMovies() {
         return movieRepository.findTop10ByOrderByReleaseDateDesc().stream().map(movie -> movie.toDTO(MovieDTO.class)).toList();
     }
@@ -174,7 +203,7 @@ public class MovieServiceImpl implements MovieService {
         Sort sort = Sort.by("created_at");
         if (desc) sort = sort.descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Movie> movies = movieRepository.searchMovies(keyword,pageable);
+        Page<Movie> movies = movieRepository.searchMovies(keyword, pageable);
         List<MovieDTO> movieDTOS = movies.getContent().stream().map(movie -> movie.toDTO(MovieDTO.class)).toList();
         ResultPagination resultPagination = new ResultPagination();
         resultPagination.setResults(movieDTOS);
@@ -188,28 +217,28 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public Map<String,Object> searchGeneral(String keyword, int page, int size, boolean desc) {
-        Map<String,Object> result = new HashMap<>();
+    public Map<String, Object> searchGeneral(String keyword, int page, int size, boolean desc) {
+        Map<String, Object> result = new HashMap<>();
         if (keyword == null || keyword.isEmpty() || keyword.equals("")) {
-            result.put("movies","");
-            result.put("persons","");
+            result.put("movies", "");
+            result.put("persons", "");
             return result;
         }
         Sort sort = Sort.by("created_at");
         if (desc) sort = sort.descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Movie> movies = movieRepository.searchMovies(keyword,pageable);
-        Page<Person> persons = personRepository.searchPersonsByName(keyword,pageable);
+        Page<Movie> movies = movieRepository.searchMovies(keyword, pageable);
+        Page<Person> persons = personRepository.searchPersonsByName(keyword, pageable);
         List<MovieGeneral> movieDTOS = movies.getContent().stream().map(
                 movie -> new MovieGeneral(
-                        movie.getId(),movie.getTitle(),movie.getOriginalTitle(),movie.getOverview(),
-                        movie.getReleaseDate(),movie.getPosterPath(),movie.getBackdropPath()
+                        movie.getId(), movie.getTitle(), movie.getOriginalTitle(), movie.getOverview(),
+                        movie.getReleaseDate(), movie.getPosterPath(), movie.getBackdropPath()
                 )).toList();
         List<PersonGeneral> personDTOS = persons.getContent().stream().map(
                 person -> new PersonGeneral(
-                        person.getId(),person.getName(),person.getCareer(),
-                        person.getProfilePath(),person.getBiography(),person.getGender())
-                ).toList();
+                        person.getId(), person.getName(), person.getCareer(),
+                        person.getProfilePath(), person.getBiography(), person.getGender())
+        ).toList();
         ResultPagination resultMovies = new ResultPagination();
         ResultPagination resultPersons = new ResultPagination();
         resultMovies.setResults(movieDTOS);
@@ -225,9 +254,42 @@ public class MovieServiceImpl implements MovieService {
         metaInfoPersons.setPage(page);
         metaInfoPersons.setSize(size);
         metaInfoPersons.setTotal(persons.getTotalElements());
-        result.put("movies",resultMovies);
-        result.put("persons",resultPersons);
+        result.put("movies", resultMovies);
+        result.put("persons", resultPersons);
         return result;
+    }
+
+    private void validateAdvancedSearchRequest(AdvanceSearchRequest request) throws InvalidExceptions {
+//        Validate vote average range
+        if (request.getMinVoteAverage() != null && request.getMaxVoteAverage() != null) {
+            if (request.getMinVoteAverage().compareTo(request.getMaxVoteAverage()) > 0) {
+                throw new InvalidExceptions("Min vote average cannot be greater than max vote averge");
+            }
+        }
+//        Validate runtime range
+        if (request.getMinRuntime() != null && request.getMaxRuntime() != null) {
+            if (request.getMinRuntime() > request.getMaxRuntime()) {
+                throw new InvalidExceptions("Min run time cannot be greater than max run time");
+            }
+        }
+//        Validate date range
+        if (request.getFromReleaseDate() != null && request.getToReleaseDate() != null) {
+            if (request.getFromReleaseDate().isAfter(request.getToReleaseDate())) {
+                throw new InvalidExceptions("From date cannot be after to date");
+            }
+        }
+//       Validate sort parameters
+        String[] validSortFields = {"releasedate", "voteaverage", "title"};
+        String[] validSortDirections = {"asc", "desc"};
+
+        if (request.getSortBy() == null ||
+                !Arrays.asList(validSortFields).contains(request.getSortBy().toLowerCase())) {
+            throw new InvalidExceptions("Invalid sort field: " + request.getSortBy());
+        }
+        if (request.getSortDirection() == null ||
+                !Arrays.asList(validSortDirections).contains(request.getSortDirection().toLowerCase())) {
+            throw new InvalidExceptions("Invalid sort direction: " + request.getSortDirection());
+        }
     }
 
     private void processPersons(String personJson, Movie movie) throws IOException {
