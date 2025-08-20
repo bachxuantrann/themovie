@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,6 +44,7 @@ public class MovieServiceImpl implements MovieService {
     private final MovieRepository movieRepository;
     private final CloudinaryService cloudinaryService;
     private final GenreRepository genreRepository;
+    private final UserRepository userRepository;
     private final MovieGenreRepository movieGenreRepository;
     private final MovieCountryRepository movieCountryRepository;
     private final MovieLanguageRepository movieLanguageRepository;
@@ -57,6 +59,7 @@ public class MovieServiceImpl implements MovieService {
     private final RatingRepository ratingRepository;
     private final UserFavouriteMovieRepository userFavouriteMovieRepository;
     private final ObjectMapper objectMapper;
+    private final UserListRepository userListRepository;
 
     public record MovieGeneral(Long id, String title, String originalTitle, String overview, LocalDate releaseDate,
                                String posterPath, String backdropPath) {
@@ -256,6 +259,24 @@ public class MovieServiceImpl implements MovieService {
         metaInfoPersons.setTotal(persons.getTotalElements());
         result.put("movies", resultMovies);
         result.put("persons", resultPersons);
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> getStatusMovie(Long movieId) {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = this.userRepository.findByUsername(userName);
+        Long userId = user.getId();
+        boolean inFavourite = userFavouriteMovieRepository.existsByUserIdAndMovieId(userId, movieId);
+        boolean inUserList = userListRepository.existsMovieInUserLists(userId, movieId);
+        Optional<Rating> ratingOfUser = ratingRepository.findByUserIdAndMovieId(userId, movieId);
+        boolean rated = ratingOfUser.isPresent();
+        Map<String, Object> result = new HashMap<>();
+        result.put("inFavourite", inFavourite);
+        result.put("inUserList", inUserList);
+        BigDecimal rating = rated ? ratingOfUser.get().getScore() : null;
+        result.put("ratingScore", rating);
+        result.put("isRated", rated);
         return result;
     }
 

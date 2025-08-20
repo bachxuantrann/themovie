@@ -127,4 +127,9 @@ public class MovieController {
         );
         return ResponseEntity.ok(movieService.advancedSearch(request));
     }
+    @GetMapping("/{movieId}/account_states")
+    @ApiMessage("get status of movie")
+    public ResponseEntity<Map<String,Object>> getStatusMovie(@PathVariable("movieId") Long movieId) throws InvalidExceptions {
+        return ResponseEntity.ok(movieService.getStatusMovie(movieId));
+    }
 }

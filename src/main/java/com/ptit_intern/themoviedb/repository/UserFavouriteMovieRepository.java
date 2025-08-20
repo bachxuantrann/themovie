@@ -23,4 +23,6 @@ public interface UserFavouriteMovieRepository extends JpaRepository<UserFavorite
     @Modifying
     @Query("DELETE FROM UserFavoriteMovie ufm WHERE ufm.user.id = :userId AND ufm.movie.id = :movieId")
     void deleteByUserIdAndMovieId(@Param("userId") Long userId, @Param("movieId") Long movieId);
+
+    boolean existsByUserIdAndMovieId(Long userId, Long movieId);
 }
