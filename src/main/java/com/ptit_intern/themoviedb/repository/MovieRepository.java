@@ -46,4 +46,18 @@ public interface MovieRepository extends JpaRepository<Movie, Long>, JpaSpecific
     // Lấy 10 phim mới nhất
     List<Movie> findTop10ByOrderByReleaseDateDesc();
     List<Movie> findTop10ByOrderByVoteAverageDesc();
+
+    @Query("""
+    SELECT DISTINCT m FROM Movie m 
+    JOIN m.movieGenres mg 
+    WHERE mg.genre.id IN (
+        SELECT mg2.genre.id FROM Movie m2 
+        JOIN m2.movieGenres mg2 
+        WHERE m2.id = :movieId
+    ) 
+    AND m.id != :movieId
+    ORDER BY m.voteAverage DESC, m.releaseDate DESC
+""")
+    Page<Movie> findSimilarMoviesByGenre(@Param("movieId") Long movieId, Pageable pageable);
+
 }

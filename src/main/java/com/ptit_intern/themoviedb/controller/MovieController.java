@@ -132,4 +132,13 @@ public class MovieController {
     public ResponseEntity<Map<String,Object>> getStatusMovie(@PathVariable("movieId") Long movieId) throws InvalidExceptions {
         return ResponseEntity.ok(movieService.getStatusMovie(movieId));
     }
+    @GetMapping("/recommendation/{id}")
+    @ApiMessage("get list recommendation of movie")
+    public ResponseEntity<?> getRecommendationMovie(@PathVariable Long id,
+        @RequestParam(defaultValue = "1")int page,
+        @RequestParam(defaultValue = "10")int size,
+        @RequestParam(defaultValue = "true") boolean desc
+    ) throws InvalidExceptions {
+        return ResponseEntity.ok(movieService.getRecommendationMovie(id,page,size,desc));
+    }
 }
