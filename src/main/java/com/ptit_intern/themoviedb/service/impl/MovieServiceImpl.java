@@ -257,6 +257,7 @@ public class MovieServiceImpl implements MovieService {
         metaInfoPersons.setPage(page);
         metaInfoPersons.setSize(size);
         metaInfoPersons.setTotal(persons.getTotalElements());
+        resultPersons.setMetaInfo(metaInfoPersons);
         result.put("movies", resultMovies);
         result.put("persons", resultPersons);
         return result;
