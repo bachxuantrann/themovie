@@ -6,6 +6,7 @@ import com.ptit_intern.themoviedb.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,11 +36,27 @@ public class SecurityConfiguration {
     private final String[] PUBLIC_ENDPOINTS = {
             "/api/auth/login",
             "/api/auth/register",
+            "/api/movies/*",
+            "/api/movies/popular",
+            "/api/movies/top-rated",
+            "/api/movies/searchGeneral",
+            "/api/movies/*/account_states",
+            "/api/movies/recommendation/*",
+            "/api/movies/searchByTitle",
+            "/api/movies/search",
+            "/api/persons/*",
+            "/api/persons/search",
             "/swagger-ui.html",
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-resources/**",
-            "/webjars/**"
+            "/webjars/**",
+    };
+    private final String[] PUBLIC_ENDPOINTS_SPECIAL = {
+            "/api/genres",
+            "/api/countries",
+            "/api/companies",
+            "/api/languages",
     };
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -55,6 +72,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                                .requestMatchers(HttpMethod.GET,PUBLIC_ENDPOINTS_SPECIAL).permitAll()
                                 .requestMatchers("/api/users/**").hasAnyRole("USER","ADMIN")
                                 .anyRequest().authenticated()
                 )
