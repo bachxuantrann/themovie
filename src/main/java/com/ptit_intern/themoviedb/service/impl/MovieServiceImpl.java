@@ -280,6 +280,29 @@ public class MovieServiceImpl implements MovieService {
         return result;
     }
 
+    @Override
+    public ResultPagination getRecommendationMovie(Long id,int page,int size,boolean desc) throws InvalidExceptions {
+        Sort sort = Sort.by("created_at");
+        if (desc) sort = sort.descending();
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        if (!movieRepository.existsById(id)) {
+            throw new InvalidExceptions("Movie is not found");
+        }
+        Page<Movie> movies =  movieRepository.findSimilarMoviesByGenre(id,pageable);
+        List<MovieSearchAdvanced> data =movies.getContent().stream()
+                .map(movie -> new MovieSearchAdvanced(movie.getId(), movie.getTitle(), movie.getOriginalTitle(), movie.getReleaseDate(),
+                        movie.getVoteAverage(), movie.getPosterPath(), movie.getBackdropPath(), movie.getRuntime())).toList();
+        ResultPagination resultPagination = new ResultPagination();
+        resultPagination.setResults(data);
+        ResultPagination.MetaInfo metaInfoMovies = new ResultPagination.MetaInfo();
+        metaInfoMovies.setTotalPages(movies.getTotalPages());
+        metaInfoMovies.setPage(page);
+        metaInfoMovies.setSize(size);
+        metaInfoMovies.setTotal(movies.getTotalElements());
+        resultPagination.setMetaInfo(metaInfoMovies);
+        return resultPagination;
+    }
+
     private void validateAdvancedSearchRequest(AdvanceSearchRequest request) throws InvalidExceptions {
 //        Validate vote average range
         if (request.getMinVoteAverage() != null && request.getMaxVoteAverage() != null) {

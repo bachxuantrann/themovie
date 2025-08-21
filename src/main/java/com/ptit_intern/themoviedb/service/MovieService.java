@@ -8,6 +8,7 @@ import com.ptit_intern.themoviedb.dto.response.MovieDetailResponse;
 import com.ptit_intern.themoviedb.dto.response.ResultPagination;
 import com.ptit_intern.themoviedb.entity.Movie;
 import com.ptit_intern.themoviedb.exception.InvalidExceptions;
+import com.ptit_intern.themoviedb.service.impl.MovieServiceImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -37,4 +38,6 @@ public interface MovieService {
     Map<String,Object> searchGeneral(String keyword, int page, int size, boolean desc);
 
     Map<String, Object> getStatusMovie(Long movieId);
+
+    ResultPagination getRecommendationMovie(Long id,int page,int size,boolean desc) throws InvalidExceptions;
 }
