@@ -313,6 +313,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public Map<String, Object> getDetailListFilm(Long listId) throws InvalidExceptions {
         UserListDTO userListDTO = this.userListRepository.findById(listId).orElseThrow(
                 () -> new InvalidExceptions("List film of user is not existed")
@@ -321,19 +322,10 @@ public class UserServiceImpl implements UserService {
                 .stream()
                 .map(ListItem::getMovieId)
                 .collect(Collectors.toSet());
-        List<MovieList> movieLists = movieRepository.findAllById(movieIds)
-                .stream()
-                .map(movie -> new MovieList(
-                        movie.getId(),
-                        movie.getTitle(),
-                        movie.getBudget(),
-                        movie.getRevenue(),
-                        movie.getVoteAverage(),
-                        movie.getVoteCount()
-                ))
-                .toList();
+        List<Movie> movieLists = movieRepository.findAllById(movieIds);
+        List<MovieDTO> movieDTOS = movieLists.stream().map(movie -> movie.toDTO(MovieDTO.class)).toList();
         Map<String, Object> result = new HashMap<>();
-        result.put("movies", movieLists);
+        result.put("movies", movieDTOS);
         result.put("listFilm", userListDTO);
         return result;
     }

@@ -1,5 +1,6 @@
 package com.ptit_intern.themoviedb.service.impl;
 
+import com.ptit_intern.themoviedb.dto.dtoClass.MovieDTO;
 import com.ptit_intern.themoviedb.dto.dtoClass.RatingDTO;
 import com.ptit_intern.themoviedb.dto.request.CreateRatingRequest;
 import com.ptit_intern.themoviedb.dto.response.ResultPagination;
@@ -63,6 +64,7 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
+    @Transactional
     public ResultPagination getUserRatings(Long id, int page, int size, boolean desc) throws InvalidExceptions {
         if (!userRepository.existsById(id)) {
             throw new InvalidExceptions("User not found");
@@ -71,17 +73,8 @@ public class RatingServiceImpl implements RatingService {
         if (desc) sort = sort.descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<Rating> ratings = ratingRepository.findByUserIdWithMovie(id, pageable);
-        Page<MovieRatingofUser> movieRatings = ratings.map(
-                rating -> new MovieRatingofUser(
-                        rating.getMovie().getId(),
-                        rating.getMovie().getTitle(),
-                        rating.getScore(),
-                        rating.getMovie().getVoteAverage(),
-                        rating.getMovie().getVoteCount(),
-                        rating.getMovie().getPosterPath(),
-                        rating.getMovie().getBackdropPath(),
-                        rating.getMovie().getReleaseDate()
-                )
+        Page<MovieDTO> movieRatings = ratings.map(
+                rating ->  rating.getMovie().toDTO(MovieDTO.class)
         );
         ResultPagination resultPagination = new ResultPagination();
         resultPagination.setResults(movieRatings.getContent());
@@ -90,6 +83,7 @@ public class RatingServiceImpl implements RatingService {
         metaInfo.setPage(page);
         metaInfo.setSize(size);
         metaInfo.setTotalPages(movieRatings.getTotalPages());
+        resultPagination.setMetaInfo(metaInfo);
         return resultPagination;
     }
 
